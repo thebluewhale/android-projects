@@ -3,8 +3,6 @@ package com.example.mykeyboard;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /** Controls the visible virtual keyboard view. */
@@ -93,13 +91,24 @@ final class Keyboard {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
             // LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
             //         150, LinearLayout.LayoutParams.MATCH_PARENT);
-            LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-                    150, LinearLayout.LayoutParams.MATCH_PARENT);
-            softkey.setLayoutParams(param);
+            // softkey.setLayoutParams(param);
             String rawData = mKeyMapping.valueAt(i);
             String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState,
                     mState + 1);
             softkey.setText(getLabel(data));
+            softkey.setOnClickListener(v -> handle(data));
+        }
+    }
+
+    private void handle(String data) {
+        if ("SHI".equals(data)) {
+            mState = mState ^ STATE_SHIFT;
+            mapKeys();
+        } else if ("SYM".equals(data)) {
+            mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
+            mapKeys();
+        } else {
+            mMyKeyboardService.handle(data);
         }
     }
 }
