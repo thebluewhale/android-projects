@@ -3,6 +3,7 @@ package com.example.mykeyboard;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 /** Controls the visible virtual keyboard view. */
@@ -93,14 +94,16 @@ final class Keyboard {
             //         150, LinearLayout.LayoutParams.MATCH_PARENT);
             // softkey.setLayoutParams(param);
             String rawData = mKeyMapping.valueAt(i);
-            String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState,
-                    mState + 1);
+            // String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState,
+            //        mState + 1);
+            String data = rawData.substring(mState, mState + 1);
             softkey.setText(getLabel(data));
-            softkey.setOnClickListener(v -> handle(data));
+            final int index = i;
+            softkey.setOnClickListener(v -> handle(data, index));
         }
     }
 
-    private void handle(String data) {
+    private void handle(String data, int index) {
         if ("SHI".equals(data)) {
             mState = mState ^ STATE_SHIFT;
             mapKeys();
@@ -109,6 +112,15 @@ final class Keyboard {
             mapKeys();
         } else {
             mMyKeyboardService.handle(data);
+            TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(index));
+            // LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(
+            //         150, LinearLayout.LayoutParams.MATCH_PARENT);
+            LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(
+                             150, 150);
+            int mh = softkey.getMeasuredHeight();
+            int h = softkey.getMeasuredHeight();
+            System.out.println("MYKEYBOARD |" + String.valueOf(mh) + ", " + String.valueOf(h));
+            softkey.setLayoutParams(lparam);
         }
     }
 }

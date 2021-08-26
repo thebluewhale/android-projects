@@ -2,4 +2,6 @@
 
 <resources>
     <color name="suggestion_strip_background">#FFEEEEEE</color>
+    <color name="key_background">#344771</color>
+    <color name="key_border">#000000</color>
 </resources>
