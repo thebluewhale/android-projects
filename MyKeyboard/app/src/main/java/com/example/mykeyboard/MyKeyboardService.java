@@ -4,6 +4,7 @@ import android.inputmethodservice.InputMethodService;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 public class MyKeyboardService extends InputMethodService {
@@ -18,6 +19,22 @@ public class MyKeyboardService extends InputMethodService {
         mKeyboard = Keyboard.qwerty(this);
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
         return mInputView;
+    }
+
+    @Override
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
+        if (mKeyboard != null) {
+            // reset keyboard layout.
+            // Need to check this is right way.
+            mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+            mKeyboard.reset();
+        }
+    }
+
+    @Override
+    public void onFinishInput() {
+        super.onFinishInput();
     }
 
     void handle(String data) {

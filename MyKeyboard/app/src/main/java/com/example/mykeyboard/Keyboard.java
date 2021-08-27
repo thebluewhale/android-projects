@@ -90,13 +90,8 @@ final class Keyboard {
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
-            // LinearLayout.LayoutParams param = new LinearLayout.LayoutParams(
-            //         150, LinearLayout.LayoutParams.MATCH_PARENT);
-            // softkey.setLayoutParams(param);
             String rawData = mKeyMapping.valueAt(i);
-            // String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState,
-            //        mState + 1);
-            String data = rawData.substring(mState, mState + 1);
+            String data = rawData.length()  != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
             softkey.setText(getLabel(data));
             final int index = i;
             softkey.setOnClickListener(v -> handle(data, index));
@@ -113,14 +108,13 @@ final class Keyboard {
         } else {
             mMyKeyboardService.handle(data);
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(index));
-            // LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(
-            //         150, LinearLayout.LayoutParams.MATCH_PARENT);
-            LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(
-                             150, 150);
-            int mh = softkey.getMeasuredHeight();
-            int h = softkey.getMeasuredHeight();
-            System.out.println("MYKEYBOARD |" + String.valueOf(mh) + ", " + String.valueOf(h));
+            LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(150, 150);
             softkey.setLayoutParams(lparam);
         }
+    }
+
+    void reset() {
+        mapKeys();
+        mState = 0;
     }
 }
