@@ -12,9 +12,18 @@ public class MyKeyboardService extends InputMethodService {
     private Keyboard mKeyboard;
     private InputConnection mInputConnection;
     private boolean isCaps = false;
+    private Trie mTrie;
+    private StringBuilder sb;
 
     @Override
     public View onCreateInputView() {
+        mTrie = new Trie();
+        mTrie.insert("apple");
+        mTrie.insert("application");
+        mTrie.insert("banana");
+        mTrie.insert("brother");
+        System.out.println("onCreateInputView");
+
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         mKeyboard = Keyboard.qwerty(this);
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
@@ -46,8 +55,17 @@ public class MyKeyboardService extends InputMethodService {
         } else if ("SPA".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
             resetKeyboardLayout();
+            sb = new StringBuilder();
         } else {
             mInputConnection.commitText(data, 1);
+            sb.append(data);
+            int[] ret = mTrie.find(sb.toString());
+            for (int i = 0; i < 26; i++) {
+                StringBuilder log = new StringBuilder("MYKEYBOARD ");
+                log.append((char)i);
+                log.append(" | ");
+                log.append(ret[i]);
+            }
         }
     }
 }
