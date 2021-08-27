@@ -24,17 +24,17 @@ public class MyKeyboardService extends InputMethodService {
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
+        resetKeyboardLayout();
+    }
+
+    void resetKeyboardLayout() {
         if (mKeyboard != null) {
             // reset keyboard layout.
             // Need to check this is right way.
+            mKeyboard = Keyboard.qwerty(this);
             mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
             mKeyboard.reset();
         }
-    }
-
-    @Override
-    public void onFinishInput() {
-        super.onFinishInput();
     }
 
     void handle(String data) {
@@ -45,6 +45,7 @@ public class MyKeyboardService extends InputMethodService {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
         } else if ("SPA".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
+            resetKeyboardLayout();
         } else {
             mInputConnection.commitText(data, 1);
         }
