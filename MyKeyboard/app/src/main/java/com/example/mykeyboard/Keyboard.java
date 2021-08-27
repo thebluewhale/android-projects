@@ -117,4 +117,8 @@ final class Keyboard {
         mapKeys();
         mState = 0;
     }
+
+    void enlargeKeys(int[] arr) {
+
+    }
 }
