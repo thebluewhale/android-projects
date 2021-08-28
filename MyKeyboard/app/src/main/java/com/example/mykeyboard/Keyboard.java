@@ -107,9 +107,6 @@ final class Keyboard {
             mapKeys();
         } else {
             mMyKeyboardService.handle(data);
-            TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(index));
-            LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(150, 150);
-            softkey.setLayoutParams(lparam);
         }
     }
 
@@ -119,14 +116,35 @@ final class Keyboard {
     }
 
     void enlargeKeys(int[] arr) {
+        int MIN_VAL = 120;
+        int DEFAULT_GAP = 30;
+        int data_max = 0;
+        int data_min = 9999999;
+
+        for (int i = 0; i < arr.length; i++) {
+            if (data_max < arr[i]) data_max = arr[i];
+            if (data_min > arr[i]) data_min = arr[i];
+        }
+        int data_gap = data_max - data_min;
+        float converted_gap = (float) DEFAULT_GAP / data_gap;
+
         for (int i = 0; i < arr.length; i++) {
             char c = (char) ('a' + i);
             int n = arr[i];
-            StringBuilder sb = new StringBuilder("MYLOG | ");
-            sb.append(c);
-            sb.append(" : ");
-            sb.append(n);
-            System.out.println(sb.toString());
+            float converted_val = MIN_VAL + (n * converted_gap);
+//            StringBuilder sb = new StringBuilder("MYLOG | ");
+//            sb.append(c);
+//            sb.append(" : ");
+//            sb.append(n);
+//            sb.append(", convgap = ");
+//            sb.append(converted_gap);
+//            sb.append(", conv = ");
+//            sb.append(converted_val);
+//            System.out.println(sb.toString());
         }
+
+//        TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(index));
+//        LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(150, 150);
+//        softkey.setLayoutParams(lparam);
     }
 }
