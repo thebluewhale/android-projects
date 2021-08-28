@@ -7,24 +7,19 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
+import java.io.IOException;
+
 public class MyKeyboardService extends InputMethodService {
     private InputView mInputView;
     private Keyboard mKeyboard;
     private InputConnection mInputConnection;
     private boolean isCaps = false;
     private Trie mTrie;
-    private StringBuilder mInputWord;
+    private StringBuilder mInputWord = new StringBuilder();
 
     @Override
     public View onCreateInputView() {
-        mTrie = new Trie();
-        mTrie.insert("apple");
-        mTrie.insert("application");
-        mTrie.insert("air");
-        mTrie.insert("banana");
-        mTrie.insert("brother");
-
-        mInputWord = new StringBuilder();
+        mTrie = new Trie(this);
 
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         mKeyboard = Keyboard.qwerty(this);

@@ -119,6 +119,14 @@ final class Keyboard {
     }
 
     void enlargeKeys(int[] arr) {
-
+        for (int i = 0; i < arr.length; i++) {
+            char c = (char) ('a' + i);
+            int n = arr[i];
+            StringBuilder sb = new StringBuilder("MYLOG | ");
+            sb.append(c);
+            sb.append(" : ");
+            sb.append(n);
+            System.out.println(sb.toString());
+        }
     }
 }
