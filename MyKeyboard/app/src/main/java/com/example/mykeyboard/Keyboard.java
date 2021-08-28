@@ -18,6 +18,7 @@ final class Keyboard {
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
     private int mState;
+    private int[] keyIdArr = new int[26];
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -25,6 +26,7 @@ final class Keyboard {
         this.mViewResId = viewResId;
         this.mKeyMapping = keyMapping;
         this.mState = 0;
+        createKeyIdArray();
     }
 
     private static String getLabel(String data) {
@@ -116,35 +118,60 @@ final class Keyboard {
     }
 
     void enlargeKeys(int[] arr) {
-        int MIN_VAL = 120;
+        // default width 95px, height 118pxin PIXEL 2
+        int MIN_VAL = 80;
         int DEFAULT_GAP = 30;
         int data_max = 0;
         int data_min = 9999999;
 
-        for (int i = 0; i < arr.length; i++) {
+        for (int i = 0; i < 26; i++) {
             if (data_max < arr[i]) data_max = arr[i];
             if (data_min > arr[i]) data_min = arr[i];
         }
         int data_gap = data_max - data_min;
         float converted_gap = (float) DEFAULT_GAP / data_gap;
 
-        for (int i = 0; i < arr.length; i++) {
-            char c = (char) ('a' + i);
+        for (int i = 0; i < 26; i++) {
             int n = arr[i];
             float converted_val = MIN_VAL + (n * converted_gap);
-//            StringBuilder sb = new StringBuilder("MYLOG | ");
-//            sb.append(c);
-//            sb.append(" : ");
-//            sb.append(n);
-//            sb.append(", convgap = ");
-//            sb.append(converted_gap);
-//            sb.append(", conv = ");
-//            sb.append(converted_val);
-//            System.out.println(sb.toString());
+
+            TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
+            LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
+            lparam.width = (int)converted_val;
+            softkey.setLayoutParams(lparam);
         }
 
 //        TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(index));
 //        LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(150, 150);
 //        softkey.setLayoutParams(lparam);
+    }
+
+    void createKeyIdArray() {
+        keyIdArr[0] = R.id.key_pos_1_0;
+        keyIdArr[1] = R.id.key_pos_2_4;
+        keyIdArr[2] = R.id.key_pos_2_2;
+        keyIdArr[3] = R.id.key_pos_1_2;
+        keyIdArr[4] = R.id.key_pos_0_2;
+        keyIdArr[5] = R.id.key_pos_1_3;
+        keyIdArr[6] = R.id.key_pos_1_4;
+        keyIdArr[7] = R.id.key_pos_1_5;
+        keyIdArr[8] = R.id.key_pos_0_7;
+        keyIdArr[9] = R.id.key_pos_1_6;
+        keyIdArr[10] = R.id.key_pos_1_7;
+        keyIdArr[11] = R.id.key_pos_1_8;
+        keyIdArr[12] = R.id.key_pos_2_5;
+        keyIdArr[13] = R.id.key_pos_2_6;
+        keyIdArr[14] = R.id.key_pos_0_8;
+        keyIdArr[15] = R.id.key_pos_0_9;
+        keyIdArr[16] = R.id.key_pos_0_0;
+        keyIdArr[17] = R.id.key_pos_0_3;
+        keyIdArr[18] = R.id.key_pos_1_1;
+        keyIdArr[19] = R.id.key_pos_0_4;
+        keyIdArr[20] = R.id.key_pos_0_6;
+        keyIdArr[21] = R.id.key_pos_2_3;
+        keyIdArr[22] = R.id.key_pos_0_1;
+        keyIdArr[23] = R.id.key_pos_2_1;
+        keyIdArr[24] = R.id.key_pos_0_5;
+        keyIdArr[25] = R.id.key_pos_2_0;
     }
 }
