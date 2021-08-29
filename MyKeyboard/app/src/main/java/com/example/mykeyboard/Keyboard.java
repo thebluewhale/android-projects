@@ -1,5 +1,7 @@
 package com.example.mykeyboard;
 
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -139,11 +141,14 @@ final class Keyboard {
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
             lparam.width = (int)converted_val;
             softkey.setLayoutParams(lparam);
-        }
 
-//        TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(index));
-//        LinearLayout.LayoutParams lparam = new LinearLayout.LayoutParams(150, 150);
-//        softkey.setLayoutParams(lparam);
+            GradientDrawable drawable = (GradientDrawable) softkey.getBackground();
+            if (converted_val > 100) {
+                drawable.setColor(Color.parseColor("#03396c"));
+            } else {
+                drawable.setColor(Color.parseColor("#151515"));
+            }
+        }
     }
 
     void createKeyIdArray() {
