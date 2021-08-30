@@ -38,9 +38,12 @@
         <item name="android:layout_gravity">center</item>
         <item name="android:textColor">@color/text_color</item>
         <item name="android:textSize">@dimen/text_size_normal</item>
-        <item name="android:background">@drawable/softkey_shape</item>
+        <item name="android:background">@drawable/softkey_transition</item>
         <item name="android:layout_marginLeft">2.5dp</item>
         <item name="android:layout_marginRight">2.5dp</item>
+        <item name="android:paddingLeft">1dp</item>
+        <item name="android:paddingRight">1dp</item>
+        <item name="android:radius">10dp</item>
     </style>
 
     <style name="SoftKey.Function">

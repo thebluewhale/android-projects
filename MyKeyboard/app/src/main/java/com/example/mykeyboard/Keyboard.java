@@ -1,7 +1,7 @@
 package com.example.mykeyboard;
 
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -120,33 +120,36 @@ final class Keyboard {
     }
 
     void enlargeKeys(int[] arr) {
-        // default width 95px, height 118pxin PIXEL 2
-        int MIN_VAL = 80;
-        int DEFAULT_GAP = 30;
-        int data_max = 0;
-        int data_min = 9999999;
+        // default width 40dp, height 45dp
+        float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
+        int MED_VAL = 40;
+        int DEFAULT_GAP = 15;
+        int data_max = Integer.MIN_VALUE;
+        int data_min = Integer.MAX_VALUE;
+        int data_sum = 0;
 
         for (int i = 0; i < 26; i++) {
             if (data_max < arr[i]) data_max = arr[i];
             if (data_min > arr[i]) data_min = arr[i];
+            data_sum += arr[i];
         }
+        int data_average = (int) Math.round(data_sum * 1.0 / 26);
         int data_gap = data_max - data_min;
         float converted_gap = (float) DEFAULT_GAP / data_gap;
 
         for (int i = 0; i < 26; i++) {
-            int n = arr[i];
-            float converted_val = MIN_VAL + (n * converted_gap);
-
             TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
-            lparam.width = (int)converted_val;
+
+            float converted_val = MED_VAL + ((arr[i] - data_average) * converted_gap);
+            lparam.width = (int) Math.round(converted_val * density + 0.5);
             softkey.setLayoutParams(lparam);
 
-            GradientDrawable drawable = (GradientDrawable) softkey.getBackground();
-            if (converted_val > 100) {
-                drawable.setColor(Color.parseColor("#03396c"));
+            Drawable drawable = softkey.getBackground();
+            if (lparam.width > (int) Math.round(45 * density + 0.5)) {
+                ((TransitionDrawable) drawable).startTransition(300);
             } else {
-                drawable.setColor(Color.parseColor("#151515"));
+                ((TransitionDrawable) drawable).resetTransition();
             }
         }
     }
@@ -164,8 +167,8 @@ final class Keyboard {
         keyIdArr[9] = R.id.key_pos_1_6;
         keyIdArr[10] = R.id.key_pos_1_7;
         keyIdArr[11] = R.id.key_pos_1_8;
-        keyIdArr[12] = R.id.key_pos_2_5;
-        keyIdArr[13] = R.id.key_pos_2_6;
+        keyIdArr[12] = R.id.key_pos_2_6;
+        keyIdArr[13] = R.id.key_pos_2_5;
         keyIdArr[14] = R.id.key_pos_0_8;
         keyIdArr[15] = R.id.key_pos_0_9;
         keyIdArr[16] = R.id.key_pos_0_0;
