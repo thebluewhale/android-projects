@@ -40,6 +40,7 @@ public class MyKeyboardService extends InputMethodService {
             mKeyboard = Keyboard.qwerty(this);
             mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
             mKeyboard.reset();
+            mInputWord.setLength(0);
         }
     }
 
@@ -47,12 +48,14 @@ public class MyKeyboardService extends InputMethodService {
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+            mInputWord.deleteCharAt(mInputWord.length() - 1);
+            mKeyboard.enlargeKeys(mTrie.find(mInputWord.toString()));
         } else if ("END".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
         } else if ("SPA".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
             resetKeyboardLayout();
-            mInputWord = new StringBuilder();
+            mInputWord.setLength(0);
         } else {
             mInputConnection.commitText(data, 1);
             mInputWord.append(data);

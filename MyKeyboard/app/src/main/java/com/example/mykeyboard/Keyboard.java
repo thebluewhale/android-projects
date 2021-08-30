@@ -136,6 +136,7 @@ final class Keyboard {
         }
         int data_average = (int) Math.round(data_sum * 1.0 / mCustomVariables.ALPHABET_SIZE);
         int data_gap = data_max - data_min;
+        if (data_gap == 0) data_gap = 1;
         float converted_gap = (float) DEFAULT_GAP / data_gap;
 
         for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
