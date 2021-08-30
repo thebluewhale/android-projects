@@ -122,8 +122,8 @@ final class Keyboard {
     void enlargeKeys(int[] arr) {
         // default width 40dp, height 45dp
         float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
-        int MED_VAL = 40;
-        int DEFAULT_GAP = 15;
+        int MED_VAL = 35;
+        int DEFAULT_GAP = 12;
         int data_max = Integer.MIN_VALUE;
         int data_min = Integer.MAX_VALUE;
         int data_sum = 0;
@@ -142,11 +142,16 @@ final class Keyboard {
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
 
             float converted_val = MED_VAL + ((arr[i] - data_average) * converted_gap);
+            if (converted_val > MED_VAL + DEFAULT_GAP) {
+                converted_val = MED_VAL + DEFAULT_GAP;
+            } else if (converted_val < MED_VAL - DEFAULT_GAP) {
+                converted_val = MED_VAL - DEFAULT_GAP;
+            }
             lparam.width = (int) Math.round(converted_val * density + 0.5);
             softkey.setLayoutParams(lparam);
 
             Drawable drawable = softkey.getBackground();
-            if (lparam.width > (int) Math.round(45 * density + 0.5)) {
+            if (lparam.width > (int) Math.round(40 * density + 0.5)) {
                 ((TransitionDrawable) drawable).startTransition(300);
             } else {
                 ((TransitionDrawable) drawable).resetTransition();

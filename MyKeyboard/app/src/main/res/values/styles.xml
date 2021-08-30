@@ -28,12 +28,12 @@
         <item name="android:layout_height">@dimen/keyboard_row_height</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:background">@android:color/transparent</item>
+        <item name="android:gravity">center</item>
     </style>
 
     <style name="SoftKey">
-        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_width">35dp</item>
         <item name="android:layout_height">45dp</item>
-        <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:textColor">@color/text_color</item>
@@ -41,15 +41,15 @@
         <item name="android:background">@drawable/softkey_transition</item>
         <item name="android:layout_marginLeft">2.5dp</item>
         <item name="android:layout_marginRight">2.5dp</item>
-        <item name="android:paddingLeft">1dp</item>
-        <item name="android:paddingRight">1dp</item>
         <item name="android:radius">10dp</item>
     </style>
 
     <style name="SoftKey.Function">
-        <item name="android:layout_width">62.5dp</item>
+        <item name="android:layout_width">50dp</item>
         <item name="android:textColor">@color/text_color</item>
         <item name="android:textSize">@dimen/text_size_symbol</item>
+        <item name="android:layout_marginLeft">2.5dp</item>
+        <item name="android:layout_marginRight">2.5dp</item>
     </style>
 
     <style name="SoftKey.Function.Text">
@@ -57,8 +57,10 @@
     </style>
 
     <style name="SoftKey.Space">
-        <item name="android:layout_weight">5</item>
         <item name="android:textColor">@color/text_color</item>
+        <item name="android:layout_width">200dp</item>
+        <item name="android:layout_marginLeft">2.5dp</item>
+        <item name="android:layout_marginRight">2.5dp</item>
     </style>
 
 </resources>
