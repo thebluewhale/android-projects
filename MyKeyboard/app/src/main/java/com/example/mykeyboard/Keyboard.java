@@ -19,8 +19,9 @@ final class Keyboard {
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
+    private CustomVariables mCustomVariables = new CustomVariables();
     private int mState;
-    private int[] keyIdArr = new int[26];
+    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -128,16 +129,16 @@ final class Keyboard {
         int data_min = Integer.MAX_VALUE;
         int data_sum = 0;
 
-        for (int i = 0; i < 26; i++) {
+        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
             if (data_max < arr[i]) data_max = arr[i];
             if (data_min > arr[i]) data_min = arr[i];
             data_sum += arr[i];
         }
-        int data_average = (int) Math.round(data_sum * 1.0 / 26);
+        int data_average = (int) Math.round(data_sum * 1.0 / mCustomVariables.ALPHABET_SIZE);
         int data_gap = data_max - data_min;
         float converted_gap = (float) DEFAULT_GAP / data_gap;
 
-        for (int i = 0; i < 26; i++) {
+        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
             TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
 
