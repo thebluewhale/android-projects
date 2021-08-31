@@ -40,7 +40,6 @@ public class MyKeyboardService extends InputMethodService {
             mKeyboard = Keyboard.qwerty(this);
             mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
             mKeyboard.reset();
-            mInputWord.setLength(0);
         }
     }
 
@@ -48,18 +47,42 @@ public class MyKeyboardService extends InputMethodService {
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-            mInputWord.deleteCharAt(mInputWord.length() - 1);
-            mKeyboard.enlargeKeys(mTrie.find(mInputWord.toString()));
-        } else if ("END".equals(data)) {
+            if (mInputWord.length() > 0) {
+                mInputWord.deleteCharAt(mInputWord.length() - 1);
+            }
+
+            if (mInputWord.length() == 0) {
+                resetKeyboardLayout();
+                mInputWord.setLength(0);
+            } else {
+                char c = mInputWord.charAt(mInputWord.length() - 1);
+                if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+                    mKeyboard.enlargeKeys(mTrie.find(mInputWord.toString()));
+                } else {
+                    resetKeyboardLayout();
+                    mInputWord.setLength(0);
+                }
+            }
+        } else if ("ENT".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+            resetKeyboardLayout();
+            mInputWord.setLength(0);
         } else if ("SPA".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
             resetKeyboardLayout();
             mInputWord.setLength(0);
         } else {
+            char c = data.charAt(0);
             mInputConnection.commitText(data, 1);
             mInputWord.append(data);
-            mKeyboard.enlargeKeys(mTrie.find(mInputWord.toString()));
+            if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
+                // only case of alphabet
+                mKeyboard.enlargeKeys(mTrie.find(mInputWord.toString()));
+            } else {
+                // case of symbols
+                resetKeyboardLayout();
+            }
+
         }
     }
 }

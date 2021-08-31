@@ -64,6 +64,7 @@ public class Trie {
     public int[] find(String str) {
         Node current = this.mRoot;
         int[] ret = new int[mCustomVariables.ALPHABET_SIZE];
+        str = str.toLowerCase();
 
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);

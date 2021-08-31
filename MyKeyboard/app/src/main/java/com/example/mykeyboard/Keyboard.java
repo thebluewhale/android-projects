@@ -125,6 +125,7 @@ final class Keyboard {
         float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
         int MED_VAL = 35;
         int DEFAULT_GAP = 12;
+        int HIGHLIGHT_VAL = MED_VAL;
         int data_max = Integer.MIN_VALUE;
         int data_min = Integer.MAX_VALUE;
         int data_sum = 0;
@@ -153,7 +154,7 @@ final class Keyboard {
             softkey.setLayoutParams(lparam);
 
             Drawable drawable = softkey.getBackground();
-            if (lparam.width > (int) Math.round(40 * density + 0.5)) {
+            if (lparam.width > (int) Math.round(HIGHLIGHT_VAL * density + 0.5)) {
                 ((TransitionDrawable) drawable).startTransition(300);
             } else {
                 ((TransitionDrawable) drawable).resetTransition();
