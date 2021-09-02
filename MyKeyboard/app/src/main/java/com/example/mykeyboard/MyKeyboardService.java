@@ -3,9 +3,12 @@ package com.example.mykeyboard;
 import android.inputmethodservice.InputMethodService;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+
+import androidx.constraintlayout.widget.ConstraintSet;
 
 import java.io.IOException;
 
@@ -35,15 +38,17 @@ public class MyKeyboardService extends InputMethodService {
 
     void resetKeyboardLayout() {
         if (mKeyboard != null) {
-            // reset keyboard layout.
-            // Need to check this is right way.
             mKeyboard = Keyboard.qwerty(this);
             mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
             mKeyboard.reset();
         }
     }
 
-    void handle(String data) {
+    void handleTouch(String data, MotionEvent evt) {
+        // TODO: implement
+    }
+
+    void handleClick(String data) {
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
@@ -82,7 +87,6 @@ public class MyKeyboardService extends InputMethodService {
                 // case of symbols
                 resetKeyboardLayout();
             }
-
         }
     }
 }

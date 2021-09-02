@@ -1,12 +1,17 @@
 package com.example.mykeyboard;
 
+import android.annotation.SuppressLint;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.util.SparseArray;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.constraintlayout.widget.ConstraintSet;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
@@ -92,6 +97,7 @@ final class Keyboard {
         return mKeyboardView;
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
@@ -99,20 +105,36 @@ final class Keyboard {
             String data = rawData.length()  != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
             softkey.setText(getLabel(data));
             final int index = i;
-            softkey.setOnClickListener(v -> handle(data, index));
+            softkey.setOnClickListener(v -> handleClick(data, index));
+            softkey.setOnTouchListener((View v, MotionEvent evt) -> handleTouch(data, index, evt));
         }
     }
 
-    private void handle(String data, int index) {
+    private boolean handleTouch(String data, int index, MotionEvent evt) {
         if ("SHI".equals(data)) {
             mState = mState ^ STATE_SHIFT;
             mapKeys();
+            return false;
         } else if ("SYM".equals(data)) {
             mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
             mapKeys();
-        } else {
-            mMyKeyboardService.handle(data);
+            return false;
         }
+        mMyKeyboardService.handleTouch(data, evt);
+        return true;
+    }
+
+    private void handleClick(String data, int index) {
+        if ("SHI".equals(data)) {
+            mState = mState ^ STATE_SHIFT;
+            mapKeys();
+            return;
+        } else if ("SYM".equals(data)) {
+            mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
+            mapKeys();
+            return;
+        }
+        mMyKeyboardService.handleClick(data);
     }
 
     void reset() {
