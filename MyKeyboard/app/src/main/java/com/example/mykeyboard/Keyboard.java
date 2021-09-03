@@ -126,8 +126,8 @@ final class Keyboard {
 
                     switch (action) {
                         case MotionEvent.ACTION_DOWN:
-                            mGestureGuideView.setX(outLocation[0] - Math.round(34.5 * density + 0.5));
-                            mGestureGuideView.setY(outLocation[1] - Math.round(104 * density + 0.5));
+                            mGestureGuideView.setX(outLocation[0] - Math.round((101 - 35) / 2 * density + 0.5));
+                            mGestureGuideView.setY(outLocation[1] - Math.round((101 - 45) / 2 * density + 0.5));
                             showGestureGuideIfNeeded(data);
                             mGestureInitialX = mGestureCurrentX = evt.getX();
                             mGestureInitialY = mGestureCurrentY = evt.getY();
