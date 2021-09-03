@@ -5,7 +5,8 @@
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="A" />
@@ -16,9 +17,11 @@
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
         <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="I" />
@@ -26,7 +29,8 @@
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="U" />
