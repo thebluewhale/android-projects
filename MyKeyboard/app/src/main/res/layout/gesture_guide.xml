@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gesture_guide"
+    style="@style/GestureGuide">
+
+    <TableRow>
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="A" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="E" />
+    </TableRow>
+
+    <TableRow>
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="I" />
+    </TableRow>
+
+    <TableRow>
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="-" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="U" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="O" />
+    </TableRow>
+
+</TableLayout>

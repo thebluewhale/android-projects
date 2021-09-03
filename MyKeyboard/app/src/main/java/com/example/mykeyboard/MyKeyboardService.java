@@ -24,17 +24,14 @@ public class MyKeyboardService extends InputMethodService {
     private Trie mTrie = null;
     private StringBuilder mInputWord = new StringBuilder();
     private VelocityTracker mVelocityTracker = null;
-    private float mInitialTouchX, mInitialTouchY;
-    private float mPrevTouchX, mPrevTouchY;
-    private float mTouchX, mTouchY;
 
     @Override
     public View onCreateInputView() {
         mTrie = new Trie(this);
-
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         mKeyboard = Keyboard.qwerty(this);
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+        mInputView.addView(mKeyboard.inflateGestureGuideView(LayoutInflater.from(this), mInputView));
         return mInputView;
     }
 
@@ -52,42 +49,7 @@ public class MyKeyboardService extends InputMethodService {
         }
     }
 
-//    void handleTouch(String data, MotionEvent evt) {
-//        int index = evt.getActionIndex();
-//        int action = evt.getActionMasked();
-//        int pointerId = evt.getPointerId(index);
-//        final int MIN_X_DISTANCE = 100;
-//        final int MAX_Y_DISTANCE = 15;
-//
-//        switch (action) {
-//            case MotionEvent.ACTION_DOWN:
-//                mInitialTouchX = evt.getX();
-//                mInitialTouchY = evt.getY();
-//                break;
-//            case MotionEvent.ACTION_UP:
-//                mGestureState = GestureState.GESTURE_STATE_NONE;
-//                mInitialTouchX = mInitialTouchY = mPrevTouchX = mPrevTouchY = 0;
-//                break;
-//            case MotionEvent.ACTION_MOVE:
-//                float angle = (float) Math.toDegrees(Math.atan2(y2 - y1, x2 - x1));
-//                if(angle > 45 && angle <= 135) return UP;
-//                else if(angle > 135 && angle <= 225) return LEFT;
-//                else if(angle > 225 && angle <= 315) return DOWN;
-//                else return RIGHT;
-//                if (mPrevTouchX == 0) {
-//                    mPrevTouchX = evt.getX();
-//                    mPrevTouchY = evt.getY();
-//                } else {
-//                    mPrevTouchX = mTouchX;
-//                    mPrevTouchY = mTouchY;
-//                }
-//                mTouchX = evt.getX();
-//                mTouchY = evt.getY();
-//                break;
-//        }
-//    }
-
-    void handleClick(String data) {
+    void handleTouchDown(String data) {
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));

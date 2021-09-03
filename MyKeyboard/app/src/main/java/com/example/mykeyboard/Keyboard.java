@@ -21,21 +21,17 @@ final class Keyboard {
     private static final int NUM_STATES = 4;
     private static final int STATE_SHIFT = 1;
     private static final int STATE_SYMBOL = 2;
-    private enum GestureDirection {
-        GESTURE_DIRECTION_UP, GESTURE_DIRECTION_DOWN,
-        GESTURE_DIRECTION_RIGHT, GESTURE_DIRECTION_LEFT,
-        GESTURE_DIRECTION_CANCELLED
-    }
 
     private final MyKeyboardService mMyKeyboardService;
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
-    private GestureDetectorCompat mGestureDetectorCompat;
+    private View mGestureGuideView;
     private CustomVariables mCustomVariables = new CustomVariables();
     private int mState;
     private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
-    private GestureDirection mGestureDirection = GestureDirection.GESTURE_DIRECTION_CANCELLED;
+    private boolean mGestureInputPossible = true;
+    private float mGesturePrevX, mGesturePrevY, mGestureCurrentX, mGestureCurrentY, mGestureInitialX, mGestureInitialY;
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -44,44 +40,6 @@ final class Keyboard {
         this.mKeyMapping = keyMapping;
         this.mState = 0;
         createKeyIdArray();
-
-        this.mGestureDetectorCompat = new GestureDetectorCompat(this.mMyKeyboardService, new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onScroll(MotionEvent evt1, MotionEvent evt2, float distX, float distY) {
-                float angle = (float) Math.toDegrees(Math.atan2(evt2.getY() - evt1.getY(), evt2.getX() - evt1.getX()));
-                // if distX < 0, right direction, distX > 0, left direction
-                // if distY > 0, up direction, distY < 0, down direction
-//                if (angle > -22.5 && angle < 22.5) {
-//                    // Right
-//                    System.out.println("MYLOG | Right " + distX);
-//                    return true;
-//                } else if (angle >= 22.5 && angle <= 67.5) {
-//                    // RightDown
-//                    System.out.println("MYLOG | RightDown " + distX);
-//                } else if (angle > 67.5 && angle < 112.5) {
-//                    // Down
-//                    System.out.println("MYLOG | Down " + distX);
-//                    return true;
-//                } else if (angle >= 112.5 && angle < 157.5) {
-//                    System.out.println("MYLOG | LeftDown " + distX);
-//                    // LeftDown
-//                } else if (angle >= 157.5 && angle <=180 || angle <= -157.5 && angle >= -180) {
-//                    System.out.println("MYLOG | Left " + distX);
-//                    // Left
-//                } else if (angle >= -157.5 && angle <= -112.5) {
-//                    System.out.println("MYLOG | LeftUp " + distX);
-//                    //  LeftUp
-//                } else if (angle < -67.5 && angle > -112.5) {
-//                    // Up
-//                    System.out.println("MYLOG | Up " + distX);
-//                    return true;
-//                } else if (angle >= -67.5 && angle <= -22.5) {
-//                    // RightUp
-//                    System.out.println("MYLOG | RightUp " + distX);
-//                }
-                return false;
-            }
-        });
     }
 
     private static String getLabel(String data) {
@@ -144,6 +102,12 @@ final class Keyboard {
         return mKeyboardView;
     }
 
+    View inflateGestureGuideView(LayoutInflater inflater, InputView inputView) {
+        mGestureGuideView = inflater.inflate(R.layout.gesture_guide, inputView, false);
+        hideGestureGuide();
+        return mGestureGuideView;
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
@@ -152,25 +116,97 @@ final class Keyboard {
             String data = rawData.length()  != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
             softkey.setText(getLabel(data));
             final int index = i;
-            softkey.setOnClickListener(v -> handleClick(data, index));
             softkey.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View view, MotionEvent evt) {
-                    mGestureDetectorCompat.onTouchEvent(evt);
-//                    int action = evt.getActionMasked();
-//                    switch (action) {
-//                        case MotionEvent.ACTION_UP:
-//                            System.out.println("MYLOG | touch up");
-//                            return true;
-//                    }
-                    return false;
+                    int []outLocation = new int[2];
+                    mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
+                    float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
+                    int action = evt.getActionMasked();
+
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN:
+                            mGestureGuideView.setX(outLocation[0] - Math.round(34.5 * density + 0.5));
+                            mGestureGuideView.setY(outLocation[1] - Math.round(104 * density + 0.5));
+                            showGestureGuideIfNeeded(data);
+                            mGestureInitialX = mGestureCurrentX = evt.getX();
+                            mGestureInitialY = mGestureCurrentY = evt.getY();
+                            mGestureInputPossible = true;
+                            handleTouchDown(data, index);
+                            break;
+                        case MotionEvent.ACTION_UP:
+                            hideGestureGuide();
+                            break;
+                        case MotionEvent.ACTION_MOVE:
+                            mGesturePrevX = mGestureCurrentX;
+                            mGesturePrevY = mGestureCurrentY;
+                            mGestureCurrentX = evt.getX();
+                            mGestureCurrentY = evt.getY();
+
+                            float angle = (float) Math.toDegrees(Math.atan2(mGestureCurrentY - mGesturePrevY, mGestureCurrentX - mGesturePrevX));
+                            float distX = mGestureCurrentX - mGestureInitialX;
+                            float distY = mGestureCurrentY - mGestureInitialY;
+
+                            if (Math.abs(distX) < 30 && Math.abs(distY) < 30) return false;
+
+                            if (angle < -67.5 && angle > -112.5) {
+                                // Up
+                                if (mGestureInputPossible) {
+                                    mMyKeyboardService.handleTouchDown("a");
+                                    mGestureInputPossible = false;
+                                }
+                            } else if (angle >= -67.5 && angle <= -22.5) {
+                                // RightUp
+                                if (mGestureInputPossible) {
+                                    mMyKeyboardService.handleTouchDown("e");
+                                    mGestureInputPossible = false;
+                                }
+                            } else if (angle > -22.5 && angle < 22.5) {
+                                // Right
+                                if (mGestureInputPossible) {
+                                    mMyKeyboardService.handleTouchDown("i");
+                                    mGestureInputPossible = false;
+                                }
+                            } else if (angle >= 22.5 && angle <= 67.5) {
+                                // RightDown
+                                if (mGestureInputPossible) {
+                                    mMyKeyboardService.handleTouchDown("o");
+                                    mGestureInputPossible = false;
+                                }
+                            } else if (angle > 67.5 && angle < 112.5) {
+                                // Down
+                                if (mGestureInputPossible) {
+                                    mMyKeyboardService.handleTouchDown("u");
+                                    mGestureInputPossible = false;
+                                }
+                            } else if (angle >= 112.5 && angle < 157.5) {
+                                // LeftDown
+                            } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
+                                // Left
+                            } else if (angle >= -157.5 && angle <= -112.5) {
+                                //  LeftUp
+                            }
+                            break;
+                        default:
+                            // do nothing
+                    }
+                    return true;
                 }
             });
         }
     }
 
-    private void handleClick(String data, int index) {
-        System.out.println("MYLOG | handleClick");
+    private void showGestureGuideIfNeeded(String data) {
+        if (!("SHIT".equals(data) || "SYM".equals(data) || "DEL".equals(data) || "SPA".equals(data))) {
+            mGestureGuideView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideGestureGuide() {
+        mGestureGuideView.setVisibility(View.INVISIBLE);
+    }
+
+    private void handleTouchDown(String data, int index) {
         if ("SHI".equals(data)) {
             mState = mState ^ STATE_SHIFT;
             mapKeys();
@@ -180,7 +216,7 @@ final class Keyboard {
             mapKeys();
             return;
         }
-        mMyKeyboardService.handleClick(data);
+        mMyKeyboardService.handleTouchDown(data);
     }
 
     void reset() {

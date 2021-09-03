@@ -4,6 +4,8 @@
     style="@style/KeyboardArea"
     android:layout_width="match_parent">
 
+    <LinearLayout style="@style/KeyboardRow.Header"></LinearLayout>
+
     <LinearLayout style="@style/KeyboardRow">
 
         <TextView
