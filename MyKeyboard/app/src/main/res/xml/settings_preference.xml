@@ -1,0 +1,35 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="카테고리">
+
+        <EditTextPreference
+            app:key="signature"
+            app:title="카테고리설정1"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="reply"
+            app:entries="@array/reply_entries"
+            app:entryValues="@array/reply_values"
+            app:key="reply"
+            app:title="리플라이 타이틀"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="카테고리2">
+
+        <SwitchPreferenceCompat
+            app:key="sync"
+            app:title="타이틀2" />
+
+        <SwitchPreferenceCompat
+            app:dependency="sync"
+            app:key="attachment"
+            app:summaryOff="요약끔"
+            app:summaryOn="요약켬"
+            app:title="싱크제목" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

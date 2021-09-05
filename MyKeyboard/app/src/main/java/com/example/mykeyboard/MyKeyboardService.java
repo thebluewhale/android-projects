@@ -1,5 +1,7 @@
 package com.example.mykeyboard;
 
+import android.content.ComponentName;
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -52,6 +54,17 @@ public class MyKeyboardService extends InputMethodService {
     void handleTouchDown(String data) {
         System.out.println("MYLOG | " + data + " : " + data.length());
         if (data.length() == 0) return;
+
+        if ("LAUNCH_SETTINGS".equals(data)) {
+            Intent settingsIntent = new Intent(Intent.ACTION_MAIN);
+            settingsIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ComponentName componentName = new ComponentName("com.example.mykeyboard", "com.example.mykeybaord.SettingsMain");
+            settingsIntent.setComponent(componentName);
+            startActivity(settingsIntent);
+            return;
+        }
+
+
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
