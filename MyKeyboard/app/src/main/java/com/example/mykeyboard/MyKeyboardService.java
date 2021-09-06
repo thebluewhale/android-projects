@@ -19,6 +19,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.view.GestureDetectorCompat;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 public class MyKeyboardService extends InputMethodService {
     private InputView mInputView = null;
@@ -28,36 +29,28 @@ public class MyKeyboardService extends InputMethodService {
 //    private Trie mTrie = null;
 //    private StringBuilder mInputWord = new StringBuilder();
     private VelocityTracker mVelocityTracker = null;
-    private DataBaseHelper mDataBaseHelper;
 
     @Override
     public View onCreateInputView() {
+        System.out.println("MYLOG | mykeyboardservice::onCreateInputView");
 //        mTrie = new Trie(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         mKeyboard = Keyboard.cheatakey(this);
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
         mInputView.addView(mKeyboard.inflateGestureGuideView(LayoutInflater.from(this), mInputView));
-        mDataBaseHelper = new DataBaseHelper(this);
-        Cursor datas = mDataBaseHelper.getAllData();
-        if (datas.getCount() != 0) {
-            while (datas.moveToNext()) {
-                for (int i = 0; i < datas.getColumnCount(); i++) {
-                    String name = datas.getColumnName(i);
-                    int n = datas.getInt(i);
-                    System.out.println(name + " : " + n);
-                }
-            }
-        }
+
         return mInputView;
     }
 
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
+        System.out.println("MYLOG | mykeyboardservice::onStartInput");
         super.onStartInput(attribute, restarting);
         resetKeyboardLayout();
     }
 
     void resetKeyboardLayout() {
+        System.out.println("MYLOG | mykeyboardservice::resetKeyboardLayout");
         if (mKeyboard != null) {
             mKeyboard = Keyboard.cheatakey(this);
             mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));

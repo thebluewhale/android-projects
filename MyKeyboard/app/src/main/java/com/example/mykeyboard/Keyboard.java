@@ -1,6 +1,7 @@
 package com.example.mykeyboard;
 
 import android.annotation.SuppressLint;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.util.SparseArray;
@@ -14,6 +15,8 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.view.GestureDetectorCompat;
+
+import java.util.HashMap;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
@@ -32,13 +35,28 @@ final class Keyboard {
 //    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
     private boolean mGestureInputPossible = true;
     private float mGesturePrevX, mGesturePrevY, mGestureCurrentX, mGestureCurrentY, mGestureInitialX, mGestureInitialY;
+    private DataBaseHelper mDataBaseHelper;
+    private HashMap<String, Integer> mSettingsMap = new HashMap<>();
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
+        System.out.println("MYLOG | keyboard::constructor");
         this.mMyKeyboardService = myKeyboardService;
         this.mViewResId = viewResId;
         this.mKeyMapping = keyMapping;
         this.mState = 0;
+
+        mDataBaseHelper = new DataBaseHelper(mMyKeyboardService);
+        Cursor settings = mDataBaseHelper.getAllData();
+        if (settings.getCount() != 0) {
+            while (settings.moveToNext()) {
+                for (int i = 0; i < settings.getColumnCount(); i++) {
+                    String name = settings.getColumnName(i);
+                    int value = settings.getInt(i);
+                    mSettingsMap.put(name, value);
+                }
+            }
+        }
 //        createKeyIdArray();
     }
 
@@ -133,8 +151,9 @@ final class Keyboard {
                         case MotionEvent.ACTION_DOWN:
                             float softkeyWidth = softkey.getWidth();
                             float gestureGuideViewWidth = Math.round(101 * density + 0.5);
-                            mGestureGuideView.setX(outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2));
-                            mGestureGuideView.setY(outLocation[1] - gestureGuideViewWidth);
+                            float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
+                            float locationY = outLocation[1] - gestureGuideViewWidth;
+                            setGestureGuideViewLocation(locationX, locationY);
                             showGestureGuideIfNeeded(data);
                             mGestureInitialX = mGestureCurrentX = evt.getX();
                             mGestureInitialY = mGestureCurrentY = evt.getY();
@@ -204,6 +223,10 @@ final class Keyboard {
     }
 
     private void showGestureGuideIfNeeded(String data) {
+        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) &&
+                mSettingsMap.get(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == 0) {
+            return;
+        }
         if (!("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
                 "SPA".equals(data) || "ENT".equals(data) || "~".equals(data) ||
                 "!".equals(data) || "^".equals(data) || "?".equals(data) ||
@@ -215,6 +238,15 @@ final class Keyboard {
 
     private void hideGestureGuide() {
         mGestureGuideView.setVisibility(View.INVISIBLE);
+    }
+
+    private void setGestureGuideViewLocation(float x, float y) {
+        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) &&
+                mSettingsMap.get(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == 0) {
+            return;
+        }
+        mGestureGuideView.setX(x);
+        mGestureGuideView.setY(y);
     }
 
     private void handleTouchDown(String data, int index) {
