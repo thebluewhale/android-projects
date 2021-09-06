@@ -2,7 +2,9 @@ package com.example.mykeyboard;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.database.Cursor;
 import android.inputmethodservice.InputMethodService;
+import android.provider.ContactsContract;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -26,6 +28,7 @@ public class MyKeyboardService extends InputMethodService {
 //    private Trie mTrie = null;
 //    private StringBuilder mInputWord = new StringBuilder();
     private VelocityTracker mVelocityTracker = null;
+    private DataBaseHelper mDataBaseHelper;
 
     @Override
     public View onCreateInputView() {
@@ -34,6 +37,17 @@ public class MyKeyboardService extends InputMethodService {
         mKeyboard = Keyboard.cheatakey(this);
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
         mInputView.addView(mKeyboard.inflateGestureGuideView(LayoutInflater.from(this), mInputView));
+        mDataBaseHelper = new DataBaseHelper(this);
+        Cursor datas = mDataBaseHelper.getAllData();
+        if (datas.getCount() != 0) {
+            while (datas.moveToNext()) {
+                for (int i = 0; i < datas.getColumnCount(); i++) {
+                    String name = datas.getColumnName(i);
+                    int n = datas.getInt(i);
+                    System.out.println(name + " : " + n);
+                }
+            }
+        }
         return mInputView;
     }
 
@@ -52,7 +66,6 @@ public class MyKeyboardService extends InputMethodService {
     }
 
     void handleTouchDown(String data) {
-        System.out.println("MYLOG | " + data + " : " + data.length());
         if (data.length() == 0) return;
 
         if ("LAUNCH_SETTINGS".equals(data)) {
