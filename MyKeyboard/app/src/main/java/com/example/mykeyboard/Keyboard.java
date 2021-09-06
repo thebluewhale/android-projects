@@ -237,7 +237,7 @@ final class Keyboard {
 
     private String getTextFromFuncKey(String data) {
         if ("VOWEL".equals(data)) {
-            return "";
+            return "LAUNCH_SETTINGS";
         } else {
             return data;
         }
