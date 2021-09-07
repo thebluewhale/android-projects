@@ -34,6 +34,18 @@ final class Keyboard {
     private static final int STATE_SHIFT = 1;
     private static final int STATE_SYMBOL = 2;
 
+    private enum GESTURE_DIRECTION {
+        UP(0), RIGHTUP(1), RIGHT(2), RIGHTDOWN(3),
+        DOWN(4), LEFTDOWN(5), LEFT(6), LEFTUP(7);
+        private final int index;
+        private GESTURE_DIRECTION(int index) {
+            this.index = index;
+        }
+        public int toInt() {
+            return index;
+        }
+    }
+
     private final MyKeyboardService mMyKeyboardService;
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
@@ -42,14 +54,16 @@ final class Keyboard {
     private LayoutInflater mLayoutInflater;
     private PopupWindow mGestureGuideViewContainer = new PopupWindow();
     private CustomVariables mCustomVariables = new CustomVariables();
+    private DataBaseHelper mDataBaseHelper;
+    private HashMap<String, Integer> mSettingsMap;
     private int mState;
 //    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
     private boolean mGestureInputPossible = true;
     private float mGesturePrevX, mGesturePrevY, mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
-    private DataBaseHelper mDataBaseHelper;
-    private HashMap<String, Integer> mSettingsMap = new HashMap<>();
     private Queue<Float> mGestureXQueue = new LinkedList<>();
     private Queue<Float> mGestureYQueue = new LinkedList<>();
+    private int[] mGestureDirectionUsedFlag = new int[8];
+
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -58,17 +72,8 @@ final class Keyboard {
         this.mKeyMapping = keyMapping;
         this.mState = 0;
 
-        mDataBaseHelper = new DataBaseHelper(mMyKeyboardService);
-        Cursor settings = mDataBaseHelper.getAllData();
-        if (settings.getCount() != 0) {
-            while (settings.moveToNext()) {
-                for (int i = 0; i < settings.getColumnCount(); i++) {
-                    String name = settings.getColumnName(i);
-                    int value = settings.getInt(i);
-                    mSettingsMap.put(name, value);
-                }
-            }
-        }
+        initializeDataBaseHelper();
+        initializeGestureDirectionUsedFlag();
 //        createKeyIdArray();
     }
 
@@ -128,6 +133,18 @@ final class Keyboard {
         keyMapping.put(R.id.key_pos_comma_mark, ",");
         keyMapping.put(R.id.key_pos_space, "SPA");
         keyMapping.put(R.id.key_pos_enter, "ENT");
+
+//        keyMapping.put(R.id.key_pos_num_0, "0");
+//        keyMapping.put(R.id.key_pos_num_1, "1");
+//        keyMapping.put(R.id.key_pos_num_2, "2");
+//        keyMapping.put(R.id.key_pos_num_3, "3");
+//        keyMapping.put(R.id.key_pos_num_4, "4");
+//        keyMapping.put(R.id.key_pos_num_5, "5");
+//        keyMapping.put(R.id.key_pos_num_6, "6");
+//        keyMapping.put(R.id.key_pos_num_7, "7");
+//        keyMapping.put(R.id.key_pos_num_8, "8");
+//        keyMapping.put(R.id.key_pos_num_9, "9");
+
         return new Keyboard(myKeyboardService, R.layout.keyboard_cheatakey, keyMapping);
     }
 
@@ -155,6 +172,7 @@ final class Keyboard {
                 mGestureBaseY = mGestureCurrentY = evt.getY();
                 mGestureInputPossible = true;
                 initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
+                initializeGestureDirectionUsedFlag();
                 handleTouchDown(data, index);
                 break;
             case MotionEvent.ACTION_UP:
@@ -175,33 +193,33 @@ final class Keyboard {
 
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
-                    if (mGestureInputPossible) {
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
                         mMyKeyboardService.handleTouchDown("a");
-                        mGestureInputPossible = false;
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
                     }
                 } else if (angle >= -67.5 && angle <= -22.5) {
                     // RightUp
-                    if (mGestureInputPossible) {
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
                         mMyKeyboardService.handleTouchDown("e");
-                        mGestureInputPossible = false;
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
                     }
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
-                    if (mGestureInputPossible) {
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
                         mMyKeyboardService.handleTouchDown("i");
-                        mGestureInputPossible = false;
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
                     }
                 } else if (angle >= 22.5 && angle <= 67.5) {
                     // RightDown
-                    if (mGestureInputPossible) {
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
                         mMyKeyboardService.handleTouchDown("o");
-                        mGestureInputPossible = false;
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
                     }
                 } else if (angle > 67.5 && angle < 112.5) {
                     // Down
-                    if (mGestureInputPossible) {
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN)) {
                         mMyKeyboardService.handleTouchDown("u");
-                        mGestureInputPossible = false;
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN, 1);
                     }
                 } else if (angle >= 112.5 && angle < 157.5) {
                     // LeftDown
@@ -221,11 +239,13 @@ final class Keyboard {
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
-            String rawData = mKeyMapping.valueAt(i);
-            String data = rawData.length()  != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
-            softkey.setText(getLabel(data));
-            final int index = i;
-            softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
+            if (softkey != null) {
+                String rawData = mKeyMapping.valueAt(i);
+                String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
+                softkey.setText(getLabel(data));
+                final int index = i;
+                softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
+            }
         }
     }
 
@@ -277,6 +297,21 @@ final class Keyboard {
         mState = 0;
     }
 
+    void initializeDataBaseHelper() {
+        mDataBaseHelper = new DataBaseHelper(mMyKeyboardService);
+        mSettingsMap = new HashMap<>();
+        Cursor settings = mDataBaseHelper.getAllData();
+        if (settings.getCount() != 0) {
+            while (settings.moveToNext()) {
+                for (int i = 0; i < settings.getColumnCount(); i++) {
+                    String name = settings.getColumnName(i);
+                    int value = settings.getInt(i);
+                    mSettingsMap.put(name, value);
+                }
+            }
+        }
+    }
+
     private String getTextFromFuncKey(String data) {
         if ("VOWEL".equals(data)) {
             return "";
@@ -318,6 +353,21 @@ final class Keyboard {
             mGestureBaseY = mGestureYQueue.poll();
             mGestureYQueue.add(y);
         }
+    }
+
+    private void initializeGestureDirectionUsedFlag() {
+        for (GESTURE_DIRECTION direction : GESTURE_DIRECTION.values()) {
+            mGestureDirectionUsedFlag[direction.toInt()] = 0;
+        }
+    }
+
+    private void updateGestureDirectionUsedFlag(GESTURE_DIRECTION direction, int flag) {
+        initializeGestureDirectionUsedFlag();
+        mGestureDirectionUsedFlag[direction.toInt()] = flag;
+    }
+
+    private boolean getGestureDirectionUsedFlag(GESTURE_DIRECTION direction) {
+        return mGestureDirectionUsedFlag[direction.toInt()] == 1;
     }
 
 //    void enlargeKeys(int[] arr) {

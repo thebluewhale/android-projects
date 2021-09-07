@@ -30,11 +30,14 @@ public class MyKeyboardService extends InputMethodService {
     private boolean isCaps = false;
 //    private Trie mTrie = null;
     private StringBuilder mInputWord = new StringBuilder();
-    private VelocityTracker mVelocityTracker = null;
+    private DataBaseManager mDataBaseManager;
+    private CustomVariables mCustomVariables;
 
     @Override
     public View onCreateInputView() {
 //        mTrie = new Trie(this);
+        mDataBaseManager = DataBaseManager.getInstance(this);
+        mCustomVariables = new CustomVariables();
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         createKeyboardLayout();
         return mInputView;

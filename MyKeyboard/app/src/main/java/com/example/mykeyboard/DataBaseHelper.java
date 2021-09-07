@@ -21,6 +21,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String COL_USE_AUTO_PERIOD = "settings_use_auto_period";
     public static final String COL_USE_BACKKEY_LONGPRESS = "settings_use_backkey_longpress";
     private CustomVariables mCustomVariables = new CustomVariables();
+    public HashMap<String, Integer> mSettingsMap = new HashMap<>();
 
     public DataBaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, 1);
