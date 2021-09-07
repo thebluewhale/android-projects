@@ -63,11 +63,12 @@ public class MyKeyboardService extends InputMethodService {
     }
 
     boolean checkDoubleSpaceToPeriod() {
-        if (mKeyboard.useDoubleSpaceToPeriod() == false ||
-                !Character.toString(mInputWord.charAt(mInputWord.length() - 1)).equals(" ")) {
+        if ((mKeyboard.useDoubleSpaceToPeriod() == false) ||
+                (mInputWord.length() == 0) ||
+                (!Character.toString(mInputWord.charAt(mInputWord.length() - 1)).equals(" "))) {
             return false;
         }
-        mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        mInputConnection.deleteSurroundingText(1, 0);
         mInputConnection.commitText(".", 1);
         mInputWord.deleteCharAt(mInputWord.length() - 1);
         mInputWord.append(".");
@@ -116,6 +117,7 @@ public class MyKeyboardService extends InputMethodService {
 //            resetKeyboardLayout();
 //            mInputWord.setLength(0);
             }
+            System.out.println("MYLOG | [" + mInputWord.toString() + "]");
         } else {
             char c = data.charAt(0);
             mInputConnection.commitText(data, 1);
