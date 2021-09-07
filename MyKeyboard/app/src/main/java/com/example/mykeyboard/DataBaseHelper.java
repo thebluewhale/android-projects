@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 
 import java.util.HashMap;
+import java.util.Locale;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "mykeyboard.db";
@@ -66,5 +67,16 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor res = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
         return res;
+    }
+
+    public boolean getSettingValue(String setting) {
+        String query = "SELECT " + setting + " FROM " + TABLE_NAME;
+        SQLiteDatabase db = this.getWritableDatabase();
+        Cursor cursor = db.rawQuery(query, null);
+        cursor.moveToFirst();
+        if (cursor.getCount() != 0) {
+            return cursor.getInt(cursor.getColumnIndex(setting)) == 1;
+        }
+        return false;
     }
 }

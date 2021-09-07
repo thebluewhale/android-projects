@@ -55,11 +55,9 @@ final class Keyboard {
     private PopupWindow mGestureGuideViewContainer = new PopupWindow();
     private CustomVariables mCustomVariables = new CustomVariables();
     private DataBaseHelper mDataBaseHelper;
-    private HashMap<String, Integer> mSettingsMap;
     private int mState;
 //    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
-    private boolean mGestureInputPossible = true;
-    private float mGesturePrevX, mGesturePrevY, mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
+    private float mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
     private Queue<Float> mGestureXQueue = new LinkedList<>();
     private Queue<Float> mGestureYQueue = new LinkedList<>();
     private int[] mGestureDirectionUsedFlag = new int[8];
@@ -134,18 +132,60 @@ final class Keyboard {
         keyMapping.put(R.id.key_pos_space, "SPA");
         keyMapping.put(R.id.key_pos_enter, "ENT");
 
-//        keyMapping.put(R.id.key_pos_num_0, "0");
-//        keyMapping.put(R.id.key_pos_num_1, "1");
-//        keyMapping.put(R.id.key_pos_num_2, "2");
-//        keyMapping.put(R.id.key_pos_num_3, "3");
-//        keyMapping.put(R.id.key_pos_num_4, "4");
-//        keyMapping.put(R.id.key_pos_num_5, "5");
-//        keyMapping.put(R.id.key_pos_num_6, "6");
-//        keyMapping.put(R.id.key_pos_num_7, "7");
-//        keyMapping.put(R.id.key_pos_num_8, "8");
-//        keyMapping.put(R.id.key_pos_num_9, "9");
-
         return new Keyboard(myKeyboardService, R.layout.keyboard_cheatakey, keyMapping);
+    }
+
+    static Keyboard cheatakey_num(MyKeyboardService myKeyboardService) {
+        SparseArray<String> keyMapping = new SparseArray<>();
+        keyMapping.put(R.id.key_pos_wave_mark, "~");
+        keyMapping.put(R.id.key_pos_0_1, "qQ1\u007E");
+        keyMapping.put(R.id.key_pos_0_2, "rR2\u2022");
+        keyMapping.put(R.id.key_pos_0_3, "tT3\u221A");
+        keyMapping.put(R.id.key_pos_0_4, "kK(}");
+        keyMapping.put(R.id.key_pos_0_5, "pP0\u2206");
+        keyMapping.put(R.id.key_pos_exclamation_mark, "!");
+
+        keyMapping.put(R.id.key_pos_caret_mark, "^");
+        keyMapping.put(R.id.key_pos_1_1, "sS#\u00A2");
+        keyMapping.put(R.id.key_pos_1_2, "dD$\u20AC");
+        keyMapping.put(R.id.key_pos_1_3, "gG&\u005E");
+        keyMapping.put(R.id.key_pos_1_4, "jJ+{");
+        keyMapping.put(R.id.key_pos_1_5, "lL)\\");
+        keyMapping.put(R.id.key_pos_question_mark, "?");
+
+        keyMapping.put(R.id.key_pos_semicolon_mark, ";");
+        keyMapping.put(R.id.key_pos_2_1, "cC'\u00AE");
+        keyMapping.put(R.id.key_pos_2_2, "fF_\u00A5");
+        keyMapping.put(R.id.key_pos_2_3, "vV:\u2122");
+        keyMapping.put(R.id.key_pos_2_4, "bB;\u2713");
+        keyMapping.put(R.id.key_pos_vowel, "VOWEL");
+        keyMapping.put(R.id.key_pos_period_mark, ".");
+
+        keyMapping.put(R.id.key_pos_asterisk_mark, "*");
+        keyMapping.put(R.id.key_pos_3_1, "zZ*%");
+        keyMapping.put(R.id.key_pos_3_2, "xX\"\u00A9");
+        keyMapping.put(R.id.key_pos_3_3, "nN![");
+        keyMapping.put(R.id.key_pos_3_4, "mM?]");
+        keyMapping.put(R.id.key_pos_del, "DEL");
+
+        keyMapping.put(R.id.key_pos_symbol, "SYM");
+        keyMapping.put(R.id.key_pos_shift, "SHI");
+        keyMapping.put(R.id.key_pos_comma_mark, ",");
+        keyMapping.put(R.id.key_pos_space, "SPA");
+        keyMapping.put(R.id.key_pos_enter, "ENT");
+
+        keyMapping.put(R.id.key_pos_num_0, "0");
+        keyMapping.put(R.id.key_pos_num_1, "1");
+        keyMapping.put(R.id.key_pos_num_2, "2");
+        keyMapping.put(R.id.key_pos_num_3, "3");
+        keyMapping.put(R.id.key_pos_num_4, "4");
+        keyMapping.put(R.id.key_pos_num_5, "5");
+        keyMapping.put(R.id.key_pos_num_6, "6");
+        keyMapping.put(R.id.key_pos_num_7, "7");
+        keyMapping.put(R.id.key_pos_num_8, "8");
+        keyMapping.put(R.id.key_pos_num_9, "9");
+
+        return new Keyboard(myKeyboardService, R.layout.keyboard_cheatakey_num, keyMapping);
     }
 
     View inflateKeyboardView(LayoutInflater inflater, InputView inputView) {
@@ -170,7 +210,6 @@ final class Keyboard {
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
                 mGestureBaseX = mGestureCurrentX = evt.getX();
                 mGestureBaseY = mGestureCurrentY = evt.getY();
-                mGestureInputPossible = true;
                 initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
                 initializeGestureDirectionUsedFlag();
                 handleTouchDown(data, index);
@@ -179,10 +218,8 @@ final class Keyboard {
                 hideGestureGuide();
                 break;
             case MotionEvent.ACTION_MOVE:
-                mGesturePrevX = mGestureCurrentX;
-                mGesturePrevY = mGestureCurrentY;
-                mGestureCurrentX = evt.getX();
-                mGestureCurrentY = evt.getY();
+                float mGestureCurrentX = evt.getX();
+                float mGestureCurrentY = evt.getY();
                 addGestureEventIntoQueue(mGestureCurrentX, mGestureCurrentY);
 
                 float distX = mGestureCurrentX - mGestureBaseX;
@@ -250,8 +287,7 @@ final class Keyboard {
     }
 
     private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
-        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) &&
-                mSettingsMap.get(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == 0) {
+        if (mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == false) {
             return;
         }
         if (!("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
@@ -275,8 +311,7 @@ final class Keyboard {
     }
 
     private void handleTouchDown(String data, int index) {
-        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK) &&
-                mSettingsMap.get(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK) == 1) {
+        if (mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK)) {
             mMyKeyboardService.getVibratorService().vibrate(
                     VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         }
@@ -298,18 +333,7 @@ final class Keyboard {
     }
 
     void initializeDataBaseHelper() {
-        mDataBaseHelper = new DataBaseHelper(mMyKeyboardService);
-        mSettingsMap = new HashMap<>();
-        Cursor settings = mDataBaseHelper.getAllData();
-        if (settings.getCount() != 0) {
-            while (settings.moveToNext()) {
-                for (int i = 0; i < settings.getColumnCount(); i++) {
-                    String name = settings.getColumnName(i);
-                    int value = settings.getInt(i);
-                    mSettingsMap.put(name, value);
-                }
-            }
-        }
+        mDataBaseHelper = mMyKeyboardService.getDataBaseHelper();
     }
 
     private String getTextFromFuncKey(String data) {
@@ -321,11 +345,7 @@ final class Keyboard {
     }
 
     boolean useDoubleSpaceToPeriod() {
-        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_AUTO_PERIOD) &&
-                mSettingsMap.get(mCustomVariables.SETTINGS_USE_AUTO_PERIOD) == 1) {
-            return true;
-        }
-        return false;
+        return mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_AUTO_PERIOD);
     }
     
     private int dpToPx(float dp) {

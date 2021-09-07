@@ -30,14 +30,14 @@ public class MyKeyboardService extends InputMethodService {
     private boolean isCaps = false;
 //    private Trie mTrie = null;
     private StringBuilder mInputWord = new StringBuilder();
-    private DataBaseManager mDataBaseManager;
+    private DataBaseHelper mDatabaseHelper;
     private CustomVariables mCustomVariables;
 
     @Override
     public View onCreateInputView() {
 //        mTrie = new Trie(this);
-        mDataBaseManager = DataBaseManager.getInstance(this);
         mCustomVariables = new CustomVariables();
+        mDatabaseHelper = new DataBaseHelper(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         createKeyboardLayout();
         return mInputView;
@@ -57,7 +57,12 @@ public class MyKeyboardService extends InputMethodService {
     }
 
     private void createKeyboardLayout() {
-        mKeyboard = Keyboard.cheatakey(this);
+        if (mDatabaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_NUMBER_ROW)) {
+            mKeyboard = Keyboard.cheatakey_num(this);
+        } else {
+            mKeyboard = Keyboard.cheatakey(this);
+        }
+
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
     }
 
@@ -133,5 +138,12 @@ public class MyKeyboardService extends InputMethodService {
 //                resetKeyboardLayout();
 //            }
         }
+    }
+
+    public DataBaseHelper getDataBaseHelper() {
+        if (mDatabaseHelper == null) {
+            mDatabaseHelper = new DataBaseHelper(this);
+        }
+        return mDatabaseHelper;
     }
 }
