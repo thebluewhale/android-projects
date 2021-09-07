@@ -1,6 +1,8 @@
 package com.example.mykeyboard;
 
+import android.content.Context;
 import android.inputmethodservice.InputMethodService;
+import android.os.Vibrator;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -21,17 +23,18 @@ public class MyKeyboardService extends InputMethodService {
     private Keyboard mKeyboard = null;
     private InputConnection mInputConnection;
     private boolean isCaps = false;
-    private Trie mTrie = null;
+        private Trie mTrie = null;
     private StringBuilder mInputWord = new StringBuilder();
-    private VelocityTracker mVelocityTracker = null;
+    private DataBaseHelper mDatabaseHelper;
+    private CustomVariables mCustomVariables;
 
     @Override
     public View onCreateInputView() {
         mTrie = new Trie(this);
+        mCustomVariables = new CustomVariables();
+        mDatabaseHelper = new DataBaseHelper(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
-        mKeyboard = Keyboard.qwerty(this);
-        mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
-        mInputView.addView(mKeyboard.inflateGestureGuideView(LayoutInflater.from(this), mInputView));
+        createKeyboardLayout();
         return mInputView;
     }
 
@@ -43,10 +46,31 @@ public class MyKeyboardService extends InputMethodService {
 
     void resetKeyboardLayout() {
         if (mKeyboard != null) {
-            mKeyboard = Keyboard.qwerty(this);
-            mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+            createKeyboardLayout();
             mKeyboard.reset();
         }
+    }
+
+    private void createKeyboardLayout() {
+        mKeyboard = Keyboard.qwerty(this);
+        mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+    }
+
+    public Vibrator getVibratorService() {
+        return (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    boolean checkDoubleSpaceToPeriod() {
+        if ((mKeyboard.useDoubleSpaceToPeriod() == false) ||
+                (mInputWord.length() == 0) ||
+                (!Character.toString(mInputWord.charAt(mInputWord.length() - 1)).equals(" "))) {
+            return false;
+        }
+        mInputConnection.deleteSurroundingText(1, 0);
+        mInputConnection.commitText(".", 1);
+        mInputWord.deleteCharAt(mInputWord.length() - 1);
+        mInputWord.append(".");
+        return true;
     }
 
     void handleTouchDown(String data) {
@@ -89,5 +113,12 @@ public class MyKeyboardService extends InputMethodService {
                 resetKeyboardLayout();
             }
         }
+    }
+
+    public DataBaseHelper getDataBaseHelper() {
+        if (mDatabaseHelper == null) {
+            mDatabaseHelper = new DataBaseHelper(this);
+        }
+        return mDatabaseHelper;
     }
 }
