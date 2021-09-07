@@ -16,10 +16,16 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.view.GestureDetectorCompat;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
@@ -39,9 +45,11 @@ final class Keyboard {
     private int mState;
 //    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
     private boolean mGestureInputPossible = true;
-    private float mGesturePrevX, mGesturePrevY, mGestureCurrentX, mGestureCurrentY, mGestureInitialX, mGestureInitialY;
+    private float mGesturePrevX, mGesturePrevY, mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
     private DataBaseHelper mDataBaseHelper;
     private HashMap<String, Integer> mSettingsMap = new HashMap<>();
+    private Queue<Float> mGestureXQueue = new LinkedList<>();
+    private Queue<Float> mGestureYQueue = new LinkedList<>();
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -143,9 +151,10 @@ final class Keyboard {
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
                 float locationY = outLocation[1] - gestureGuideViewWidth;
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
-                mGestureInitialX = mGestureCurrentX = evt.getX();
-                mGestureInitialY = mGestureCurrentY = evt.getY();
+                mGestureBaseX = mGestureCurrentX = evt.getX();
+                mGestureBaseY = mGestureCurrentY = evt.getY();
                 mGestureInputPossible = true;
+                initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
                 handleTouchDown(data, index);
                 break;
             case MotionEvent.ACTION_UP:
@@ -156,12 +165,13 @@ final class Keyboard {
                 mGesturePrevY = mGestureCurrentY;
                 mGestureCurrentX = evt.getX();
                 mGestureCurrentY = evt.getY();
+                addGestureEventIntoQueue(mGestureCurrentX, mGestureCurrentY);
 
-                float angle = (float) Math.toDegrees(Math.atan2(mGestureCurrentY - mGesturePrevY, mGestureCurrentX - mGesturePrevX));
-                float distX = mGestureCurrentX - mGestureInitialX;
-                float distY = mGestureCurrentY - mGestureInitialY;
+                float distX = mGestureCurrentX - mGestureBaseX;
+                float distY = mGestureCurrentY - mGestureBaseY;
+                float angle = (float) Math.toDegrees(Math.atan2(distY, distX));
 
-                if (Math.abs(distX) < 30 && Math.abs(distY) < 30) return false;
+                if (Math.abs(distX) < dpToPx(30) && Math.abs(distY) < dpToPx(30)) return false;
 
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
@@ -286,6 +296,28 @@ final class Keyboard {
     private int dpToPx(float dp) {
         float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
         return (int) Math.round(dp * density + 0.5);
+    }
+
+    private void initializeGestureEventQueue(float initX, float initY) {
+        mGestureXQueue.clear();
+        mGestureYQueue.clear();
+        mGestureXQueue.add(initX);
+        mGestureYQueue.add(initY);
+    }
+
+    private void addGestureEventIntoQueue(float x, float y) {
+        if (mGestureXQueue.size() < 10) {
+            mGestureXQueue.add(x);
+        } else {
+            mGestureBaseX = mGestureXQueue.poll();
+            mGestureXQueue.add(x);
+        }
+        if (mGestureYQueue.size() < 10) {
+            mGestureYQueue.add(y);
+        } else {
+            mGestureBaseY = mGestureYQueue.poll();
+            mGestureYQueue.add(y);
+        }
     }
 
 //    void enlargeKeys(int[] arr) {
