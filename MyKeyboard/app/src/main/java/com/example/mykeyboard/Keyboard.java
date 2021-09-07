@@ -222,16 +222,13 @@ final class Keyboard {
     private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
         if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) &&
                 mSettingsMap.get(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == 0) {
-            System.out.println("MYLOG | SETTINGS_USE_SWIPE_POPUP is disabled");
             return;
         }
-        System.out.println("MYLOG | SETTINGS_USE_SWIPE_POPUP is enabled");
         if (!("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
                 "SPA".equals(data) || "ENT".equals(data) || "~".equals(data) ||
                 "!".equals(data) || "^".equals(data) || "?".equals(data) ||
                 ";".equals(data) || ".".equals(data) ||
                 "*".equals(data) || ",".equals(data))) {
-            System.out.println("MYLOG | will draw gestureGuideViewContainer");
             mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
             if (mGestureGuideView.getParent() != null) {
                 ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
