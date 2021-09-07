@@ -4,13 +4,16 @@ import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
+import android.os.VibrationEffect;
 import android.util.SparseArray;
 import android.view.DragEvent;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintSet;
@@ -30,6 +33,8 @@ final class Keyboard {
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
     private View mGestureGuideView;
+    private LayoutInflater mLayoutInflater;
+    private PopupWindow mGestureGuideViewContainer = new PopupWindow();
     private CustomVariables mCustomVariables = new CustomVariables();
     private int mState;
 //    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
@@ -40,7 +45,6 @@ final class Keyboard {
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
-        System.out.println("MYLOG | keyboard::constructor");
         this.mMyKeyboardService = myKeyboardService;
         this.mViewResId = viewResId;
         this.mKeyMapping = keyMapping;
@@ -120,15 +124,87 @@ final class Keyboard {
     }
 
     View inflateKeyboardView(LayoutInflater inflater, InputView inputView) {
-        mKeyboardView = inflater.inflate(mViewResId, inputView, false);
+        mLayoutInflater = inflater;
+        mKeyboardView = mLayoutInflater.inflate(mViewResId, inputView, false);
         mapKeys();
         return mKeyboardView;
     }
 
-    View inflateGestureGuideView(LayoutInflater inflater, InputView inputView) {
-        mGestureGuideView = inflater.inflate(R.layout.gesture_guide, inputView, false);
-        hideGestureGuide();
-        return mGestureGuideView;
+    private boolean onSoftkeyTouch(View view, MotionEvent evt, TextView softkey, int index, String data) {
+        int []outLocation = new int[2];
+        mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
+        float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
+        int action = evt.getActionMasked();
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                float softkeyWidth = softkey.getWidth();
+                float gestureGuideViewWidth = Math.round(101 * density + 0.5);
+                float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
+                float locationY = outLocation[1] - gestureGuideViewWidth;
+                showGestureGuideIfNeeded(view, locationX, locationY, data);
+                mGestureInitialX = mGestureCurrentX = evt.getX();
+                mGestureInitialY = mGestureCurrentY = evt.getY();
+                mGestureInputPossible = true;
+                handleTouchDown(data, index);
+                break;
+            case MotionEvent.ACTION_UP:
+                hideGestureGuide();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                mGesturePrevX = mGestureCurrentX;
+                mGesturePrevY = mGestureCurrentY;
+                mGestureCurrentX = evt.getX();
+                mGestureCurrentY = evt.getY();
+
+                float angle = (float) Math.toDegrees(Math.atan2(mGestureCurrentY - mGesturePrevY, mGestureCurrentX - mGesturePrevX));
+                float distX = mGestureCurrentX - mGestureInitialX;
+                float distY = mGestureCurrentY - mGestureInitialY;
+
+                if (Math.abs(distX) < 30 && Math.abs(distY) < 30) return false;
+
+                if (angle < -67.5 && angle > -112.5) {
+                    // Up
+                    if (mGestureInputPossible) {
+                        mMyKeyboardService.handleTouchDown("a");
+                        mGestureInputPossible = false;
+                    }
+                } else if (angle >= -67.5 && angle <= -22.5) {
+                    // RightUp
+                    if (mGestureInputPossible) {
+                        mMyKeyboardService.handleTouchDown("e");
+                        mGestureInputPossible = false;
+                    }
+                } else if (angle > -22.5 && angle < 22.5) {
+                    // Right
+                    if (mGestureInputPossible) {
+                        mMyKeyboardService.handleTouchDown("i");
+                        mGestureInputPossible = false;
+                    }
+                } else if (angle >= 22.5 && angle <= 67.5) {
+                    // RightDown
+                    if (mGestureInputPossible) {
+                        mMyKeyboardService.handleTouchDown("o");
+                        mGestureInputPossible = false;
+                    }
+                } else if (angle > 67.5 && angle < 112.5) {
+                    // Down
+                    if (mGestureInputPossible) {
+                        mMyKeyboardService.handleTouchDown("u");
+                        mGestureInputPossible = false;
+                    }
+                } else if (angle >= 112.5 && angle < 157.5) {
+                    // LeftDown
+                } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
+                    // Left
+                } else if (angle >= -157.5 && angle <= -112.5) {
+                    //  LeftUp
+                }
+                break;
+            default:
+                // do nothing
+        }
+        return true;
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -139,117 +215,44 @@ final class Keyboard {
             String data = rawData.length()  != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
             softkey.setText(getLabel(data));
             final int index = i;
-            softkey.setOnTouchListener(new View.OnTouchListener() {
-                @Override
-                public boolean onTouch(View view, MotionEvent evt) {
-                    int []outLocation = new int[2];
-                    mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
-                    float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
-                    int action = evt.getActionMasked();
-
-                    switch (action) {
-                        case MotionEvent.ACTION_DOWN:
-                            float softkeyWidth = softkey.getWidth();
-                            float gestureGuideViewWidth = Math.round(101 * density + 0.5);
-                            float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
-                            float locationY = outLocation[1] - gestureGuideViewWidth;
-                            setGestureGuideViewLocation(locationX, locationY);
-                            showGestureGuideIfNeeded(data);
-                            mGestureInitialX = mGestureCurrentX = evt.getX();
-                            mGestureInitialY = mGestureCurrentY = evt.getY();
-                            mGestureInputPossible = true;
-                            handleTouchDown(data, index);
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            hideGestureGuide();
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            mGesturePrevX = mGestureCurrentX;
-                            mGesturePrevY = mGestureCurrentY;
-                            mGestureCurrentX = evt.getX();
-                            mGestureCurrentY = evt.getY();
-
-                            float angle = (float) Math.toDegrees(Math.atan2(mGestureCurrentY - mGesturePrevY, mGestureCurrentX - mGesturePrevX));
-                            float distX = mGestureCurrentX - mGestureInitialX;
-                            float distY = mGestureCurrentY - mGestureInitialY;
-
-                            if (Math.abs(distX) < 30 && Math.abs(distY) < 30) return false;
-
-                            if (angle < -67.5 && angle > -112.5) {
-                                // Up
-                                if (mGestureInputPossible) {
-                                    mMyKeyboardService.handleTouchDown("a");
-                                    mGestureInputPossible = false;
-                                }
-                            } else if (angle >= -67.5 && angle <= -22.5) {
-                                // RightUp
-                                if (mGestureInputPossible) {
-                                    mMyKeyboardService.handleTouchDown("e");
-                                    mGestureInputPossible = false;
-                                }
-                            } else if (angle > -22.5 && angle < 22.5) {
-                                // Right
-                                if (mGestureInputPossible) {
-                                    mMyKeyboardService.handleTouchDown("i");
-                                    mGestureInputPossible = false;
-                                }
-                            } else if (angle >= 22.5 && angle <= 67.5) {
-                                // RightDown
-                                if (mGestureInputPossible) {
-                                    mMyKeyboardService.handleTouchDown("o");
-                                    mGestureInputPossible = false;
-                                }
-                            } else if (angle > 67.5 && angle < 112.5) {
-                                // Down
-                                if (mGestureInputPossible) {
-                                    mMyKeyboardService.handleTouchDown("u");
-                                    mGestureInputPossible = false;
-                                }
-                            } else if (angle >= 112.5 && angle < 157.5) {
-                                // LeftDown
-                            } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
-                                // Left
-                            } else if (angle >= -157.5 && angle <= -112.5) {
-                                //  LeftUp
-                            }
-                            break;
-                        default:
-                            // do nothing
-                    }
-                    return true;
-                }
-            });
+            softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
         }
     }
 
-    private void showGestureGuideIfNeeded(String data) {
+    private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
         if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) &&
                 mSettingsMap.get(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == 0) {
+            System.out.println("MYLOG | SETTINGS_USE_SWIPE_POPUP is disabled");
             return;
         }
+        System.out.println("MYLOG | SETTINGS_USE_SWIPE_POPUP is enabled");
         if (!("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
                 "SPA".equals(data) || "ENT".equals(data) || "~".equals(data) ||
                 "!".equals(data) || "^".equals(data) || "?".equals(data) ||
                 ";".equals(data) || ".".equals(data) ||
                 "*".equals(data) || ",".equals(data))) {
-            mGestureGuideView.setVisibility(View.VISIBLE);
+            System.out.println("MYLOG | will draw gestureGuideViewContainer");
+            mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
+            if (mGestureGuideView.getParent() != null) {
+                ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
+            }
+            mGestureGuideViewContainer.setContentView(mGestureGuideView);
+            mGestureGuideViewContainer.setWidth(dpToPx(101));
+            mGestureGuideViewContainer.setHeight(dpToPx(101));
+            mGestureGuideViewContainer.showAtLocation(view, 0, (int)x, (int)y);
         }
     }
 
     private void hideGestureGuide() {
-        mGestureGuideView.setVisibility(View.INVISIBLE);
-    }
-
-    private void setGestureGuideViewLocation(float x, float y) {
-        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) &&
-                mSettingsMap.get(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == 0) {
-            return;
-        }
-        mGestureGuideView.setX(x);
-        mGestureGuideView.setY(y);
+        mGestureGuideViewContainer.dismiss();
     }
 
     private void handleTouchDown(String data, int index) {
+        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK) &&
+                mSettingsMap.get(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK) == 1) {
+            mMyKeyboardService.getVibratorService().vibrate(
+                    VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
         if ("SHI".equals(data)) {
             mState = mState ^ STATE_SHIFT;
             mapKeys();
@@ -269,10 +272,23 @@ final class Keyboard {
 
     private String getTextFromFuncKey(String data) {
         if ("VOWEL".equals(data)) {
-            return "LAUNCH_SETTINGS";
+            return "";
         } else {
             return data;
         }
+    }
+
+    boolean useDoubleSpaceToPeriod() {
+        if (mSettingsMap.containsKey(mCustomVariables.SETTINGS_USE_AUTO_PERIOD) &&
+                mSettingsMap.get(mCustomVariables.SETTINGS_USE_AUTO_PERIOD) == 1) {
+            return true;
+        }
+        return false;
+    }
+    
+    private int dpToPx(float dp) {
+        float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
+        return (int) Math.round(dp * density + 0.5);
     }
 
 //    void enlargeKeys(int[] arr) {

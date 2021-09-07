@@ -1,9 +1,11 @@
 package com.example.mykeyboard;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.inputmethodservice.InputMethodService;
+import android.os.Vibrator;
 import android.provider.ContactsContract;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
@@ -27,35 +29,49 @@ public class MyKeyboardService extends InputMethodService {
     private InputConnection mInputConnection;
     private boolean isCaps = false;
 //    private Trie mTrie = null;
-//    private StringBuilder mInputWord = new StringBuilder();
+    private StringBuilder mInputWord = new StringBuilder();
     private VelocityTracker mVelocityTracker = null;
 
     @Override
     public View onCreateInputView() {
-        System.out.println("MYLOG | mykeyboardservice::onCreateInputView");
 //        mTrie = new Trie(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
-        mKeyboard = Keyboard.cheatakey(this);
-        mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
-        mInputView.addView(mKeyboard.inflateGestureGuideView(LayoutInflater.from(this), mInputView));
-
+        createKeyboardLayout();
         return mInputView;
     }
 
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
-        System.out.println("MYLOG | mykeyboardservice::onStartInput");
         super.onStartInput(attribute, restarting);
         resetKeyboardLayout();
     }
 
     void resetKeyboardLayout() {
-        System.out.println("MYLOG | mykeyboardservice::resetKeyboardLayout");
         if (mKeyboard != null) {
-            mKeyboard = Keyboard.cheatakey(this);
-            mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+            createKeyboardLayout();
             mKeyboard.reset();
         }
+    }
+
+    private void createKeyboardLayout() {
+        mKeyboard = Keyboard.cheatakey(this);
+        mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+    }
+
+    public Vibrator getVibratorService() {
+        return (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+    }
+
+    boolean checkDoubleSpaceToPeriod() {
+        if (mKeyboard.useDoubleSpaceToPeriod() == false ||
+                !Character.toString(mInputWord.charAt(mInputWord.length() - 1)).equals(" ")) {
+            return false;
+        }
+        mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        mInputConnection.commitText(".", 1);
+        mInputWord.deleteCharAt(mInputWord.length() - 1);
+        mInputWord.append(".");
+        return true;
     }
 
     void handleTouchDown(String data) {
@@ -70,13 +86,12 @@ public class MyKeyboardService extends InputMethodService {
             return;
         }
 
-
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-//            if (mInputWord.length() > 0) {
-//                mInputWord.deleteCharAt(mInputWord.length() - 1);
-//            }
+            if (mInputWord.length() > 0) {
+                mInputWord.deleteCharAt(mInputWord.length() - 1);
+            }
 //            if (mInputWord.length() == 0) {
 //                resetKeyboardLayout();
 //                mInputWord.setLength(0);
@@ -91,16 +106,20 @@ public class MyKeyboardService extends InputMethodService {
 //            }
         } else if ("ENT".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+            mInputWord.append(" ");
 //            resetKeyboardLayout();
 //            mInputWord.setLength(0);
         } else if ("SPA".equals(data)) {
-            mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
+            if (checkDoubleSpaceToPeriod() == false) {
+                mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
+                mInputWord.append(" ");
 //            resetKeyboardLayout();
 //            mInputWord.setLength(0);
+            }
         } else {
             char c = data.charAt(0);
             mInputConnection.commitText(data, 1);
-//            mInputWord.append(data);
+            mInputWord.append(data);
 //            if (c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z') {
                 // only case of alphabet
 //                mKeyboard.enlargeKeys(mTrie.find(mInputWord.toString()));

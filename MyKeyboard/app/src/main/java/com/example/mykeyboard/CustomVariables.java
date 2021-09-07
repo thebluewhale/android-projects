@@ -8,4 +8,6 @@ public class CustomVariables {
             "settings_use_number_row", "settings_use_auto_period", "settings_use_backkey_longpress"
     };
     String SETTINGS_USE_SWIPE_POPUP = "settings_use_swipe_popup";
+    String SETTINGS_USE_VIBRATION_FEEDBACK = "settings_use_vibration_feedback";
+    String SETTINGS_USE_AUTO_PERIOD = "settings_use_auto_period";
 }
