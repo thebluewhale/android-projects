@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
@@ -61,6 +63,10 @@ final class Keyboard {
     private Queue<Float> mGestureXQueue = new LinkedList<>();
     private Queue<Float> mGestureYQueue = new LinkedList<>();
     private int[] mGestureDirectionUsedFlag = new int[8];
+    private Timer mTimer;
+    private TimerTask mTouchDownTimerTask, mContinueInputTimerTask;
+    private boolean mTouchDownTimerValid;
+    private String mCurrentClickedKey;
 
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
@@ -200,9 +206,11 @@ final class Keyboard {
         mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
         float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
         int action = evt.getActionMasked();
+        Drawable drawable = softkey.getBackground();
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
+                mCurrentClickedKey = data;
                 float softkeyWidth = softkey.getWidth();
                 float gestureGuideViewWidth = Math.round(101 * density + 0.5);
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
@@ -212,12 +220,17 @@ final class Keyboard {
                 mGestureBaseY = mGestureCurrentY = evt.getY();
                 initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
                 initializeGestureDirectionUsedFlag();
+                touchTimerHandler(true);
+                ((TransitionDrawable) drawable).startTransition(0);
                 handleTouchDown(data, index);
                 break;
             case MotionEvent.ACTION_UP:
                 hideGestureGuide();
+                touchTimerHandler(false);
+                ((TransitionDrawable) drawable).resetTransition();
                 break;
             case MotionEvent.ACTION_MOVE:
+                touchTimerHandler(false);
                 float mGestureCurrentX = evt.getX();
                 float mGestureCurrentY = evt.getY();
                 addGestureEventIntoQueue(mGestureCurrentX, mGestureCurrentY);
@@ -287,7 +300,10 @@ final class Keyboard {
     }
 
     private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
-        if (mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_SWIPE_POPUP) == false) {
+        if (!mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_SWIPE_POPUP)) {
+            return;
+        }
+        if ((mState == STATE_SYMBOL) || (mState == STATE_SYMBOL + STATE_SHIFT)) {
             return;
         }
         if (!("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
@@ -388,6 +404,42 @@ final class Keyboard {
 
     private boolean getGestureDirectionUsedFlag(GESTURE_DIRECTION direction) {
         return mGestureDirectionUsedFlag[direction.toInt()] == 1;
+    }
+
+    private void touchTimerHandler(boolean down) {
+        if (down) {
+            mTimer = new Timer();
+            if (mTouchDownTimerTask != null) {
+                mTouchDownTimerTask.cancel();
+                mTouchDownTimerTask = null;
+            }
+            mTouchDownTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    if (mContinueInputTimerTask != null) {
+                        mContinueInputTimerTask.cancel();
+                        mContinueInputTimerTask = null;
+                    }
+                    mContinueInputTimerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            continueInputHandler();
+                        }
+                    };
+                    mTimer.schedule(mContinueInputTimerTask, 250, 250);
+                }
+            };
+            mTimer.schedule(mTouchDownTimerTask, 1000, Long.MAX_VALUE);
+        } else {
+            if (mTimer != null) mTimer.cancel();
+        }
+    }
+
+    private void continueInputHandler() {
+        if (mCurrentClickedKey.equals("SHI") || mCurrentClickedKey.equals("SYM") || mCurrentClickedKey.equals("ENT")) {
+            return;
+        }
+        mMyKeyboardService.handleTouchDown(getTextFromFuncKey(mCurrentClickedKey));
     }
 
 //    void enlargeKeys(int[] arr) {

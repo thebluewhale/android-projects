@@ -18,9 +18,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SettingsMain extends AppCompatActivity {
-    private DataBaseManager mDataBaseManager;
     private SharedPreferences mSharedPreferences;
     private CustomVariables mCustomVariables;
+    private DataBaseHelper mDataBaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +39,7 @@ public class SettingsMain extends AppCompatActivity {
         }
 
         mCustomVariables = new CustomVariables();
-        mDataBaseManager = DataBaseManager.getInstance(this);
-        mDataBaseManager.deleteAll();
+        mDataBaseHelper = new DataBaseHelper(this);
 
 //        startActivity(new Intent("android.settings.INPUT_METHOD_SETTINGS"));
 //        InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(INPUT_METHOD_SERVICE);
@@ -57,6 +56,12 @@ public class SettingsMain extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        mDataBaseHelper.deleteAll();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -65,7 +70,7 @@ public class SettingsMain extends AppCompatActivity {
             boolean value = mSharedPreferences.getBoolean(menu, false);
             settings.put(menu, value ? 1 : 0);
         }
-        mDataBaseManager.insertBoolean(settings);
+        mDataBaseHelper.insertBoolean(settings);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
