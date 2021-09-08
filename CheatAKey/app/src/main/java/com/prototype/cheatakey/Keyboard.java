@@ -345,6 +345,10 @@ final class Keyboard {
         if ((mState == STATE_SYMBOL) || (mState == STATE_SYMBOL + STATE_SHIFT)) {
             return;
         }
+        if (mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK)) {
+            mCheatAKeyService.getVibratorService().vibrate(
+                    VibrationEffect.createOneShot(15, VibrationEffect.DEFAULT_AMPLITUDE));
+        }
         mCheatAKeyService.handleTouchDown(
                 mState == STATE_SHIFT ? data.toUpperCase(Locale.ROOT) : data);
     }
