@@ -6,22 +6,10 @@
     <TableRow>
         <TextView
             style="@style/GestureGuide.Cell"
-            android:text="-" />
+            android:text="H" />
         <TextView
             style="@style/GestureGuide.Cell"
-            android:text="A" />
-        <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="E" />
-    </TableRow>
-
-    <TableRow>
-        <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="-" />
-        <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="-" />
+            android:text="O" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="I" />
@@ -30,13 +18,25 @@
     <TableRow>
         <TextView
             style="@style/GestureGuide.Cell"
-            android:text="-" />
+            android:text="E" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="●" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="A" />
+    </TableRow>
+
+    <TableRow>
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="W" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="U" />
         <TextView
             style="@style/GestureGuide.Cell"
-            android:text="O" />
+            android:text="Y" />
     </TableRow>
 
 </TableLayout>

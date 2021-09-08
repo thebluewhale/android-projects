@@ -244,25 +244,25 @@ final class Keyboard {
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
-                        mMyKeyboardService.handleTouchDown("a");
+                        mMyKeyboardService.handleTouchDown("o");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
                     }
                 } else if (angle >= -67.5 && angle <= -22.5) {
                     // RightUp
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
-                        mMyKeyboardService.handleTouchDown("e");
+                        mMyKeyboardService.handleTouchDown("i");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
                     }
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
-                        mMyKeyboardService.handleTouchDown("i");
+                        mMyKeyboardService.handleTouchDown("a");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
                     }
                 } else if (angle >= 22.5 && angle <= 67.5) {
                     // RightDown
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
-                        mMyKeyboardService.handleTouchDown("o");
+                        mMyKeyboardService.handleTouchDown("y");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
                     }
                 } else if (angle > 67.5 && angle < 112.5) {
@@ -273,10 +273,22 @@ final class Keyboard {
                     }
                 } else if (angle >= 112.5 && angle < 157.5) {
                     // LeftDown
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN)) {
+                        mMyKeyboardService.handleTouchDown("w");
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN, 1);
+                    }
                 } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
                     // Left
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT)) {
+                        mMyKeyboardService.handleTouchDown("e");
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT, 1);
+                    }
                 } else if (angle >= -157.5 && angle <= -112.5) {
                     //  LeftUp
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP)) {
+                        mMyKeyboardService.handleTouchDown("h");
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP, 1);
+                    }
                 }
                 break;
             default:
