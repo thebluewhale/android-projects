@@ -1,0 +1,80 @@
+1<?xml version="1.0" encoding="utf-8"?>
+2<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+3    package="com.prototype.cheatakey"
+4    android:versionCode="1"
+5    android:versionName="1.0" >
+6
+7    <uses-sdk
+8        android:minSdkVersion="28"
+8-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml
+9        android:targetSdkVersion="30" />
+9-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml
+10
+11    <uses-permission android:name="android.permission.VIBRATE" />
+11-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:4:5-66
+11-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:4:22-63
+12
+13    <application
+13-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:5:5-31:19
+14        android:allowBackup="true"
+14-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:6:9-35
+15        android:appComponentFactory="androidx.core.app.CoreComponentFactory"
+15-->[androidx.core:core:1.5.0] C:\Users\marc\.gradle\caches\transforms-3\255d63c0f9f8f5d12ab3191ffb377750\transformed\core-1.5.0\AndroidManifest.xml:24:18-86
+16        android:extractNativeLibs="false"
+17        android:icon="@mipmap/ic_launcher"
+17-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:7:9-43
+18        android:label="@string/app_name"
+18-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:8:9-41
+19        android:roundIcon="@mipmap/ic_launcher_round"
+19-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:9:9-54
+20        android:supportsRtl="true"
+20-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:10:9-35
+21        android:theme="@style/Theme.CheatAKey" >
+21-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:11:9-47
+22        <activity
+22-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:12:9-21:20
+23            android:name="com.prototype.cheatakey.SettingsMain"
+23-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:13:13-40
+24            android:exported="true"
+24-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:15:13-36
+25            android:label="@string/app_name"
+25-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:14:13-45
+26            android:theme="@style/Theme.Settings" >
+26-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:16:13-50
+27            <intent-filter>
+27-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:17:13-20:29
+28                <action android:name="android.intent.action.MAIN" />
+28-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:18:17-69
+28-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:18:25-66
+29
+30                <category android:name="android.intent.category.LAUNCHER" />
+30-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:19:17-77
+30-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:19:27-74
+31            </intent-filter>
+32        </activity>
+33
+34        <service
+34-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:22:9-30:19
+35            android:name="com.prototype.cheatakey.CheatAKeyService"
+35-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:23:13-44
+36            android:label="@string/app_name"
+36-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:24:13-45
+37            android:permission="android.permission.BIND_INPUT_METHOD" >
+37-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:25:13-70
+38            <intent-filter>
+38-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:26:13-28:29
+39                <action android:name="android.view.InputMethod" />
+39-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:27:17-67
+39-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:27:25-64
+40            </intent-filter>
+41
+42            <meta-data
+42-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:29:13-88
+43                android:name="android.view.im"
+43-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:29:24-54
+44                android:resource="@xml/method" />
+44-->C:\Users\marc\Desktop\Projects\android-projects\CheatAKey\app\src\main\AndroidManifest.xml:29:55-85
+45        </service>
+46    </application>
+47
+48</manifest>

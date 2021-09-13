@@ -1,12 +1,7 @@
 package com.example.mykeyboard;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.inputmethod.InputMethodInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.view.inputmethod.InputMethodSubtype;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +10,6 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class SettingsMain extends AppCompatActivity {
     private DataBaseHelper mDataBaseHelper;
@@ -40,7 +34,6 @@ public class SettingsMain extends AppCompatActivity {
 
         mCustomVariables = new CustomVariables();
         mDataBaseHelper = new DataBaseHelper(this);
-        mDataBaseHelper.deleteAll();
 
 //        startActivity(new Intent("android.settings.INPUT_METHOD_SETTINGS"));
 //        InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(INPUT_METHOD_SERVICE);
@@ -54,6 +47,12 @@ public class SettingsMain extends AppCompatActivity {
 //                Toast.makeText(getApplicationContext(),"Your Keyboard Enable",Toast.LENGTH_SHORT).show();
 //            }
 //        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mDataBaseHelper.deleteAll();
     }
 
     @Override

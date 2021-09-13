@@ -6,11 +6,9 @@ import android.widget.FrameLayout;
 
 /** The root view for the Input Method. */
 public final class InputView extends FrameLayout {
-
     // If true, this InputView will simulate Gboard's InputView behavior, which expands its
     // region to the entire window regardless of its content view's size.
     private static final boolean EXPAND_TO_WINDOW = false;
-
     private int mRealHeight;
 
     public InputView(Context context, AttributeSet attrs) {

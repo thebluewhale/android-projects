@@ -5,8 +5,6 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.TransitionDrawable;
 import android.os.VibrationEffect;
 import android.util.SparseArray;
-import android.view.DragEvent;
-import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -15,22 +13,15 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.core.view.GestureDetectorCompat;
-
 import java.util.LinkedList;
 import java.util.Queue;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
-
-    private static final int NUM_STATES = 4;
-    private static final int STATE_SHIFT = 1;
-    private static final int STATE_SYMBOL = 2;
-
     private enum GESTURE_DIRECTION {
         UP(0), RIGHTUP(1), RIGHT(2), RIGHTDOWN(3),
-        DOWN(4), LEFTDOWN(5), LEFT(6), LEFTUP(7);
+        DOWN(4), LEFTDOWN(5), LEFT(6), LEFTUP(7),
+        STARTING_POINT(8), SHOULD_COME_BACK(9);
         private final int index;
         private GESTURE_DIRECTION(int index) {
             this.index = index;
@@ -39,7 +30,6 @@ final class Keyboard {
             return index;
         }
     }
-
     private final MyKeyboardService mMyKeyboardService;
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
@@ -51,11 +41,10 @@ final class Keyboard {
     private DataBaseHelper mDataBaseHelper;
     private int mState;
     private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
-    private float mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
+    private float mGestureInitialX, mGestureInitialY, mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
     private Queue<Float> mGestureXQueue = new LinkedList<>();
     private Queue<Float> mGestureYQueue = new LinkedList<>();
-    private int[] mGestureDirectionUsedFlag = new int[8];
-
+    private int[] mGestureDirectionUsedFlag = new int[10];
 
     private Keyboard(MyKeyboardService myKeyboardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -123,7 +112,7 @@ final class Keyboard {
         return new Keyboard(myKeyboardService, R.layout.keyboard_10_9_9, keyMapping);
     }
 
-    View inflateKeyboardView(LayoutInflater inflater, InputView inputView) {
+    public View inflateKeyboardView(LayoutInflater inflater, InputView inputView) {
         mLayoutInflater = inflater;
         mKeyboardView = mLayoutInflater.inflate(mViewResId, inputView, false);
         mapKeys();
@@ -143,8 +132,8 @@ final class Keyboard {
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
                 float locationY = outLocation[1] - Math.round((101 - 45) / 2 * density + 0.5);
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
-                mGestureBaseX = mGestureCurrentX = evt.getX();
-                mGestureBaseY = mGestureCurrentY = evt.getY();
+                mGestureInitialX = mGestureBaseX = mGestureCurrentX = evt.getX();
+                mGestureInitialY = mGestureBaseY = mGestureCurrentY = evt.getY();
                 initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
                 initializeGestureDirectionUsedFlag();
                 handleTouchDown(data, index);
@@ -155,6 +144,16 @@ final class Keyboard {
             case MotionEvent.ACTION_MOVE:
                 float mGestureCurrentX = evt.getX();
                 float mGestureCurrentY = evt.getY();
+
+                if (getGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK)) {
+                    if (isGestureCameBack(mGestureInitialX, mGestureInitialY, mGestureCurrentX, mGestureCurrentY)) {
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.STARTING_POINT, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 0);
+                    } else {
+                        return true;
+                    }
+                }
+
                 addGestureEventIntoQueue(mGestureCurrentX, mGestureCurrentY);
 
                 float distX = mGestureCurrentX - mGestureBaseX;
@@ -168,37 +167,45 @@ final class Keyboard {
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
                         mMyKeyboardService.handleTouchDown("a");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= -67.5 && angle <= -22.5) {
                     // RightUp
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
                         mMyKeyboardService.handleTouchDown("e");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
                         mMyKeyboardService.handleTouchDown("i");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= 22.5 && angle <= 67.5) {
                     // RightDown
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
                         mMyKeyboardService.handleTouchDown("o");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle > 67.5 && angle < 112.5) {
                     // Down
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN)) {
                         mMyKeyboardService.handleTouchDown("u");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= 112.5 && angle < 157.5) {
                     // LeftDown
+                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
                     // Left
+                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 } else if (angle >= -157.5 && angle <= -112.5) {
                     //  LeftUp
+                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 }
                 break;
             default:
@@ -213,7 +220,7 @@ final class Keyboard {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
             if (softkey != null) {
                 String rawData = mKeyMapping.valueAt(i);
-                String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
+                String data = rawData.length() != mCustomVariables.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
                 softkey.setText(getLabel(data));
                 final int index = i;
                 softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
@@ -251,23 +258,22 @@ final class Keyboard {
                     VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         }
         if ("SHI".equals(data)) {
-            mState = mState ^ STATE_SHIFT;
+            mState = mState ^ mCustomVariables.STATE_SHIFT;
             mapKeys();
-            return;
         } else if ("SYM".equals(data)) {
-            mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
+            mState = (mState ^ mCustomVariables.STATE_SYMBOL) & ~mCustomVariables.STATE_SHIFT;
             mapKeys();
-            return;
         }
         mMyKeyboardService.handleTouchDown(getTextFromFuncKey(data));
+        mMyKeyboardService.enlargeKeysIfNeeded();
     }
 
-    void reset() {
+    public void reset() {
         mapKeys();
         mState = 0;
     }
 
-    void initializeDataBaseHelper() {
+    private void initializeDataBaseHelper() {
         mDataBaseHelper = mMyKeyboardService.getDataBaseHelper();
     }
 
@@ -325,11 +331,24 @@ final class Keyboard {
         return mGestureDirectionUsedFlag[direction.toInt()] == 1;
     }
 
-    void enlargeKeys(int[] arr) {
+    private void initializeAllGestureDatas(float x, float y) {
+        initializeGestureDirectionUsedFlag();
+        initializeGestureEventQueue(x, y);
+        mGestureBaseX = mGestureInitialX;
+        mGestureBaseY = mGestureInitialY;
+    }
+
+    private boolean isGestureCameBack(float initialX, float initialY, float currentX, float currentY) {
+        float distX = (float) Math.pow(initialX - currentX, 2);
+        float distY = (float) Math.pow(initialY - currentY, 2);
+        return Math.sqrt(distX + distY) < dpToPx(5);
+    }
+
+    public void enlargeKeys(int[] arr) {
         // default width 40dp, height 45dp
         float density = mMyKeyboardService.getResources().getDisplayMetrics().density;
         int MED_VAL = 35;
-        int DEFAULT_GAP = 12;
+        int DEFAULT_GAP = 8;
         int HIGHLIGHT_VAL = MED_VAL;
         int data_max = Integer.MIN_VALUE;
         int data_min = Integer.MAX_VALUE;
@@ -341,7 +360,7 @@ final class Keyboard {
             data_sum += arr[i];
         }
         int data_average = (int) Math.round(data_sum * 1.0 / mCustomVariables.ALPHABET_SIZE);
-        int data_gap = data_max - data_min;
+        int data_gap = (int) Math.round(standardDeviation(arr));
         if (data_gap == 0) data_gap = 1;
         float converted_gap = (float) DEFAULT_GAP / data_gap;
 
@@ -367,7 +386,7 @@ final class Keyboard {
         }
     }
 
-    void createKeyIdArray() {
+    private void createKeyIdArray() {
         keyIdArr[0] = R.id.key_pos_1_0;
         keyIdArr[1] = R.id.key_pos_2_4;
         keyIdArr[2] = R.id.key_pos_2_2;
@@ -394,5 +413,30 @@ final class Keyboard {
         keyIdArr[23] = R.id.key_pos_2_1;
         keyIdArr[24] = R.id.key_pos_0_5;
         keyIdArr[25] = R.id.key_pos_2_0;
+    }
+
+    private double mean(int[] arr) {
+        int total = 0;
+        for (int i = 0; i < arr.length; i++) {
+            total = total + arr[i];
+        }
+        return total / arr.length;
+    }
+
+    private double variance(int[] arr) {
+        double totalDev = 0;
+        double totalMean = mean(arr);
+        for (int i = 0; i < arr.length; i++) {
+            totalDev = totalDev + Math.pow(totalMean - arr[i], 2);
+        }
+        return totalDev / (arr.length - 1);
+    }
+
+    private double standardDeviation(int[] arr) {
+        return Math.sqrt(variance(arr));
+    }
+
+    public int getState() {
+        return mState;
     }
 }
