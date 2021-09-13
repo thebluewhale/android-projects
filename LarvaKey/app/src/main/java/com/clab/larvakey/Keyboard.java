@@ -69,6 +69,8 @@ final class Keyboard {
             return "[            ]";
         } else if ("ENT".equals(data)) {
             return "↩";
+        } else if ("SET".equals(data)) {
+            return "⁘";
         } else {
             return data;
         }
@@ -109,6 +111,7 @@ final class Keyboard {
         keyMapping.put(R.id.key_pos_symbol, "SYM");
         keyMapping.put(R.id.key_pos_space, "SPA");
         keyMapping.put(R.id.key_pos_enter, "ENT");
+        keyMapping.put(R.id.key_pos_settings, "SET");
         return new Keyboard(larvaKeyService, R.layout.keyboard_10_9_9, keyMapping);
     }
 

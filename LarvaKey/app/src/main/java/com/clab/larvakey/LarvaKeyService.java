@@ -1,6 +1,7 @@
 package com.clab.larvakey;
 
 import android.content.Context;
+import android.content.Intent;
 import android.inputmethodservice.InputMethodService;
 import android.os.Vibrator;
 import android.view.KeyEvent;
@@ -85,6 +86,11 @@ public class LarvaKeyService extends InputMethodService {
         } else if ("SPA".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
             mInputWord.append(" ");
+        } else if ("SET".equals(data)) {
+            // show settings page
+            Intent intent = new Intent(this, SettingsMain.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         } else {
             char c = data.charAt(0);
             mInputConnection.commitText(data, 1);

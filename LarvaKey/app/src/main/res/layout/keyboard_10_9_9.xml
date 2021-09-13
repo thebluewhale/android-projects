@@ -138,6 +138,10 @@
             style="@style/SoftKey" />
 
         <TextView
+            android:id="@+id/key_pos_settings"
+            style="@style/SoftKey" />
+
+        <TextView
             android:id="@+id/key_pos_space"
             style="@style/SoftKey.Space" />
 
