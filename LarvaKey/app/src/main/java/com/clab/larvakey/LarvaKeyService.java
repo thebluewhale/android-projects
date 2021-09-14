@@ -91,6 +91,8 @@ public class LarvaKeyService extends InputMethodService {
             Intent intent = new Intent(this, SettingsMain.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
+        } else if ("SHI".equals(data) || "SYM".equals(data)) {
+            // do nothing
         } else {
             char c = data.charAt(0);
             mInputConnection.commitText(data, 1);
@@ -113,7 +115,7 @@ public class LarvaKeyService extends InputMethodService {
             return;
         }
         if (mInputWord.length() == 0 || mInputWord.charAt(mInputWord.length() - 1) == ' ') {
-            resetKeyboardLayout();
+            mKeyboard.resetKeys();
             return;
         }
         String[] splitWord = mInputWord.toString().split(" ");

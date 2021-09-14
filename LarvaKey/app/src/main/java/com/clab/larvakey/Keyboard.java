@@ -58,19 +58,24 @@ final class Keyboard {
         createKeyIdArray();
     }
 
-    private static String getLabel(String data) {
+    private String getLabel(String data) {
         if ("SHI".equals(data)) {
+            if (mState == mCustomVariables.STATE_SYMBOL) {
+                return "1/2";
+            } else if (mState == mCustomVariables.STATE_SYMBOL + mCustomVariables.STATE_SHIFT) {
+                return "2/2";
+            }
             return "↑";
         } else if ("DEL".equals(data)) {
             return "←";
         } else if ("SYM".equals(data)) {
-            return "?123";
+            return "!#1";
         } else if ("SPA".equals(data)) {
-            return "[            ]";
+            return "SPACE";
         } else if ("ENT".equals(data)) {
             return "↩";
         } else if ("SET".equals(data)) {
-            return "⁘";
+            return "⚙";
         } else {
             return data;
         }
@@ -78,34 +83,44 @@ final class Keyboard {
 
     static Keyboard qwerty(LarvaKeyService larvaKeyService) {
         SparseArray<String> keyMapping = new SparseArray<>();
-        keyMapping.put(R.id.key_pos_0_0, "qQ1\u007E");
-        keyMapping.put(R.id.key_pos_0_1, "wW2\u0060");
-        keyMapping.put(R.id.key_pos_0_2, "eE3\u007C");
-        keyMapping.put(R.id.key_pos_0_3, "rR4\u2022");
-        keyMapping.put(R.id.key_pos_0_4, "tT5\u221A");
-        keyMapping.put(R.id.key_pos_0_5, "yY6\u03C0");
-        keyMapping.put(R.id.key_pos_0_6, "uU7\u00F7");
-        keyMapping.put(R.id.key_pos_0_7, "iI8\u00D7");
-        keyMapping.put(R.id.key_pos_0_8, "oO9\u00B6");
-        keyMapping.put(R.id.key_pos_0_9, "pP0\u2206");
-        keyMapping.put(R.id.key_pos_1_0, "aA@\u00A3");
-        keyMapping.put(R.id.key_pos_1_1, "sS#\u00A2");
-        keyMapping.put(R.id.key_pos_1_2, "dD$\u20AC");
-        keyMapping.put(R.id.key_pos_1_3, "fF_\u00A5");
-        keyMapping.put(R.id.key_pos_1_4, "gG&\u005E");
-        keyMapping.put(R.id.key_pos_1_5, "hH-=");
-        keyMapping.put(R.id.key_pos_1_6, "jJ+{");
-        keyMapping.put(R.id.key_pos_1_7, "kK(}");
-        keyMapping.put(R.id.key_pos_1_8, "lL)\\");
-        keyMapping.put(R.id.key_pos_2_0, "zZ*%");
-        keyMapping.put(R.id.key_pos_2_1, "xX\"\u00A9");
-        keyMapping.put(R.id.key_pos_2_2, "cC'\u00AE");
-        keyMapping.put(R.id.key_pos_2_3, "vV:\u2122");
-        keyMapping.put(R.id.key_pos_2_4, "bB;\u2713");
-        keyMapping.put(R.id.key_pos_2_5, "nN![");
-        keyMapping.put(R.id.key_pos_2_6, "mM?]");
-        keyMapping.put(R.id.key_pos_bottom_0, ",,,<");
-        keyMapping.put(R.id.key_pos_bottom_1, "...>");
+        keyMapping.put(R.id.key_pos_num_0, "0");
+        keyMapping.put(R.id.key_pos_num_1, "1");
+        keyMapping.put(R.id.key_pos_num_2, "2");
+        keyMapping.put(R.id.key_pos_num_3, "3");
+        keyMapping.put(R.id.key_pos_num_4, "4");
+        keyMapping.put(R.id.key_pos_num_5, "5");
+        keyMapping.put(R.id.key_pos_num_6, "6");
+        keyMapping.put(R.id.key_pos_num_7, "7");
+        keyMapping.put(R.id.key_pos_num_8, "8");
+        keyMapping.put(R.id.key_pos_num_9, "9");
+        keyMapping.put(R.id.key_pos_0_0, "qQ+`");
+        keyMapping.put(R.id.key_pos_0_1, "wW×₩");
+        keyMapping.put(R.id.key_pos_0_2, "eE+\\");
+        keyMapping.put(R.id.key_pos_0_3, "rR=|");
+        keyMapping.put(R.id.key_pos_0_4, "tT/℃");
+        keyMapping.put(R.id.key_pos_0_5, "yY_℉");
+        keyMapping.put(R.id.key_pos_0_6, "uU<{");
+        keyMapping.put(R.id.key_pos_0_7, "iI>}");
+        keyMapping.put(R.id.key_pos_0_8, "oO♡[");
+        keyMapping.put(R.id.key_pos_0_9, "pP☆]");
+        keyMapping.put(R.id.key_pos_1_0, "aA!•");
+        keyMapping.put(R.id.key_pos_1_1, "sS@○");
+        keyMapping.put(R.id.key_pos_1_2, "dD#●");
+        keyMapping.put(R.id.key_pos_1_3, "fF~□");
+        keyMapping.put(R.id.key_pos_1_4, "gG%■");
+        keyMapping.put(R.id.key_pos_1_5, "hH^◇");
+        keyMapping.put(R.id.key_pos_1_6, "jJ&$");
+        keyMapping.put(R.id.key_pos_1_7, "kK(₤");
+        keyMapping.put(R.id.key_pos_1_8, "lL)¥");
+        keyMapping.put(R.id.key_pos_2_0, "zZ-◦");
+        keyMapping.put(R.id.key_pos_2_1, "xX'※");
+        keyMapping.put(R.id.key_pos_2_2, "cC\"∞");
+        keyMapping.put(R.id.key_pos_2_3, "vV:≪");
+        keyMapping.put(R.id.key_pos_2_4, "bB;≫");
+        keyMapping.put(R.id.key_pos_2_5, "nN,¡");
+        keyMapping.put(R.id.key_pos_2_6, "mM?¿");
+        keyMapping.put(R.id.key_pos_bottom_0, ",");
+        keyMapping.put(R.id.key_pos_bottom_1, ".");
         keyMapping.put(R.id.key_pos_shift, "SHI");
         keyMapping.put(R.id.key_pos_del, "DEL");
         keyMapping.put(R.id.key_pos_symbol, "SYM");
@@ -135,10 +150,7 @@ final class Keyboard {
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
                 float locationY = outLocation[1] - Math.round((101 - 45) / 2 * density + 0.5);
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
-                mGestureInitialX = mGestureBaseX = mGestureCurrentX = evt.getX();
-                mGestureInitialY = mGestureBaseY = mGestureCurrentY = evt.getY();
-                initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
-                initializeGestureDirectionUsedFlag();
+                initializeAllGestureDatas(evt.getX(), evt.getY());
                 handleTouchDown(data, index);
                 break;
             case MotionEvent.ACTION_UP:
@@ -276,6 +288,18 @@ final class Keyboard {
         mState = 0;
     }
 
+    public void resetKeys() {
+        int MED_VAL = 35;
+        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
+            TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
+            LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
+            lparam.weight = MED_VAL;
+            softkey.setLayoutParams(lparam);
+            Drawable drawable = softkey.getBackground();
+            ((TransitionDrawable) drawable).resetTransition();
+        }
+    }
+
     private void initializeDataBaseHelper() {
         mDataBaseHelper = mLarvaKeyService.getDataBaseHelper();
     }
@@ -337,8 +361,8 @@ final class Keyboard {
     private void initializeAllGestureDatas(float x, float y) {
         initializeGestureDirectionUsedFlag();
         initializeGestureEventQueue(x, y);
-        mGestureBaseX = mGestureInitialX;
-        mGestureBaseY = mGestureInitialY;
+        mGestureInitialX = mGestureBaseX = mGestureCurrentX = x;
+        mGestureInitialY = mGestureBaseY = mGestureCurrentY = y;
     }
 
     private boolean isGestureCameBack(float initialX, float initialY, float currentX, float currentY) {
@@ -348,10 +372,9 @@ final class Keyboard {
     }
 
     public void enlargeKeys(int[] arr) {
-        // default width 40dp, height 45dp
-        float density = mLarvaKeyService.getResources().getDisplayMetrics().density;
+        // default weight 35 for softkey
         int MED_VAL = 35;
-        int DEFAULT_GAP = 8;
+        int DEFAULT_GAP = 10;
         int HIGHLIGHT_VAL = MED_VAL;
         int data_max = Integer.MIN_VALUE;
         int data_min = Integer.MAX_VALUE;
@@ -377,11 +400,11 @@ final class Keyboard {
             } else if (converted_val < MED_VAL - DEFAULT_GAP) {
                 converted_val = MED_VAL - DEFAULT_GAP;
             }
-            lparam.width = (int) Math.round(converted_val * density + 0.5);
+            lparam.weight = converted_val;
             softkey.setLayoutParams(lparam);
 
             Drawable drawable = softkey.getBackground();
-            if (lparam.width > (int) Math.round(HIGHLIGHT_VAL * density + 0.5)) {
+            if (lparam.weight > HIGHLIGHT_VAL) {
                 ((TransitionDrawable) drawable).startTransition(300);
             } else {
                 ((TransitionDrawable) drawable).resetTransition();

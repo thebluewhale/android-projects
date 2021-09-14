@@ -25,7 +25,8 @@
     </style>
 
     <style name="SoftKey">
-        <item name="android:layout_width">35dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">35</item>
         <item name="android:layout_height">45dp</item>
         <item name="android:gravity">center</item>
         <item name="android:layout_gravity">center</item>
@@ -38,22 +39,47 @@
     </style>
 
     <style name="SoftKey.Function">
-        <item name="android:layout_width">50dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">35</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
         <item name="android:textColor">@color/text_color</item>
         <item name="android:textSize">@dimen/text_size_symbol</item>
+        <item name="android:background">@drawable/softkey_transition</item>
         <item name="android:layout_marginLeft">2.5dp</item>
         <item name="android:layout_marginRight">2.5dp</item>
-    </style>
-
-    <style name="SoftKey.Function.Text">
-        <item name="android:textColor">@color/text_color</item>
+        <item name="android:radius">10dp</item>
     </style>
 
     <style name="SoftKey.Space">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">160</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
         <item name="android:textColor">@color/text_color</item>
-        <item name="android:layout_width">160dp</item>
+        <item name="android:textSize">@dimen/text_size_symbol</item>
+        <item name="android:background">@drawable/softkey_transition</item>
         <item name="android:layout_marginLeft">2.5dp</item>
         <item name="android:layout_marginRight">2.5dp</item>
+        <item name="android:radius">10dp</item>
+    </style>
+
+    <style name="BottomFunctionKeyContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">50</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="BottomSoftKeyContainer">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">245</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
     </style>
 
     <style name="GestureGuide">
