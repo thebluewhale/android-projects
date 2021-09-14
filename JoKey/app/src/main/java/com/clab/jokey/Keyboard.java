@@ -201,8 +201,7 @@ final class Keyboard {
 
     private boolean onSoftkeyTouch(View view, MotionEvent evt, TextView softkey, int index, String data) {
         int []outLocation = new int[2];
-        mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
-        float density = mJoKeyService.getResources().getDisplayMetrics().density;
+        view.getLocationInWindow(outLocation);
         int action = evt.getActionMasked();
         Drawable drawable = softkey.getBackground();
 
@@ -210,7 +209,7 @@ final class Keyboard {
             case MotionEvent.ACTION_DOWN:
                 mCurrentClickedKey = data;
                 float softkeyWidth = softkey.getWidth();
-                float gestureGuideViewWidth = Math.round(101 * density + 0.5);
+                float gestureGuideViewWidth = dpToPx(101);
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
                 float locationY = outLocation[1] - gestureGuideViewWidth;
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
