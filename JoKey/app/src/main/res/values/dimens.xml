@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <dimen name="text_size_normal">20dp</dimen>
+    <dimen name="text_size_symbol">10dp</dimen>
+    <dimen name="text_size_gesture_guide">15dp</dimen>
+
+    <dimen name="keyboard_header_height">104dp</dimen>
+    <dimen name="keyboard_row_height">55dp</dimen>
+
+    <dimen name="gesture_guide_width">101dp</dimen>
+    <dimen name="gesture_guide_height">101dp</dimen>
+    <dimen name="gesture_guide_padding">1dp</dimen>
+
+    <dimen name="gesture_guide_cell_width">32dp</dimen>
+    <dimen name="gesture_guide_cell_height">32dp</dimen>
+    <dimen name="gesture_guide_cell_margin">0.5dp</dimen>
+</resources>
