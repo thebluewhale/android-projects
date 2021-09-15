@@ -135,13 +135,7 @@ final class Keyboard {
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                float softkeyWidth = softkey.getWidth();
-                float gestureGuideViewWidth = dpToPx(101);
-                int []outLocation = new int[2];
-                view.getLocationInWindow(outLocation);
-                float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
-                float locationY = outLocation[1] - dpToPx((101 - 45) / 2);
-                showGestureGuideIfNeeded(view, locationX, locationY, data);
+                showGestureGuideIfNeeded(view, softkey, data);
                 initializeAllGestureDatas(evt.getX(), evt.getY());
                 handleTouchDown(data);
                 createTimer(data);
@@ -158,6 +152,9 @@ final class Keyboard {
                 float mGestureCurrentY = evt.getY();
 
                 if (getGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK)) {
+                    // TODO: gestureCameBack 플래그를 사용할 것이 아니라,
+                    // 제스처가 softkey 밖으로 나가면 그때부터 gestureKeyEventQueue에 담아서 궤적을 계산하고
+                    // softkey 안에서 움직이는 move 이벤트는 모두 무시하는 것으로 로직을 짜볼 필요가 있음.
                     if (isGestureCameBack(mGestureInitialX, mGestureInitialY, mGestureCurrentX, mGestureCurrentY)) {
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.STARTING_POINT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 0);
@@ -172,37 +169,40 @@ final class Keyboard {
                 float distY = mGestureCurrentY - mGestureBaseY;
                 float angle = (float) Math.toDegrees(Math.atan2(distY, distX));
 
-                if (Math.abs(distX) < dpToPx(30) && Math.abs(distY) < dpToPx(30)) return true;
+                if (Math.abs(distX) < dpToPx(30) && Math.abs(distY) < dpToPx(30)) {
+                    return true;
+                }
+
                 terminateTimer();
 
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
-                        handleTouchDown("a");
+                        handleTouchDown("i");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= -67.5 && angle <= -22.5) {
                     // RightUp
-                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
-                        handleTouchDown("e");
-                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
-                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
-                    }
+//                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
+//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
+//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+//                    }
+                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
-                        handleTouchDown("i");
+                        handleTouchDown("e");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= 22.5 && angle <= 67.5) {
                     // RightDown
-                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
-                        handleTouchDown("o");
-                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
-                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
-                    }
+//                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
+//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
+//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+//                    }
+                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 } else if (angle > 67.5 && angle < 112.5) {
                     // Down
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN)) {
@@ -212,12 +212,24 @@ final class Keyboard {
                     }
                 } else if (angle >= 112.5 && angle < 157.5) {
                     // LeftDown
-                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN)) {
+                        handleTouchDown("o");
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+                    }
                 } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
                     // Left
-                    updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT)) {
+                        handleTouchDown("a");
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT, 1);
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+                    }
                 } else if (angle >= -157.5 && angle <= -112.5) {
                     //  LeftUp
+//                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP)) {
+//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP, 1);
+//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
+//                    }
                     updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 }
                 break;
@@ -241,7 +253,13 @@ final class Keyboard {
         }
     }
 
-    private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
+    private void showGestureGuideIfNeeded(View view, TextView softkey, String data) {
+        float softkeyWidth = softkey.getWidth();
+        float gestureGuideViewWidth = dpToPx(101);
+        int []outLocation = new int[2];
+        view.getLocationInWindow(outLocation);
+        float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
+        float locationY = outLocation[1] - dpToPx(101);
         if (!mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
             return;
         }
@@ -258,7 +276,7 @@ final class Keyboard {
         mGestureGuideViewContainer.setContentView(mGestureGuideView);
         mGestureGuideViewContainer.setWidth(dpToPx(101));
         mGestureGuideViewContainer.setHeight(dpToPx(101));
-        mGestureGuideViewContainer.showAtLocation(view, 0, (int)x, (int)y);
+        mGestureGuideViewContainer.showAtLocation(view, 0, Math.round(locationX), Math.round(locationY));
     }
 
     private void hideGestureGuide() {

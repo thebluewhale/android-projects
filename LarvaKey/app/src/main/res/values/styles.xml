@@ -99,6 +99,16 @@
         <item name="android:background">@drawable/gesture_guide_background</item>
     </style>
 
+    <style name="GestureGuide.Cell.Empty">
+        <item name="android:layout_width">@dimen/gesture_guide_cell_width</item>
+        <item name="android:layout_height">@dimen/gesture_guide_cell_height</item>
+        <item name="android:layout_margin">@dimen/gesture_guide_cell_margin</item>
+        <item name="android:textColor">@android:color/black</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/text_size_gesture_guide</item>
+        <item name="android:background">@drawable/gesture_guide_background_empty</item>
+    </style>
+
     <style name="GestureGuide.Cell.Transparent">
         <item name="android:textColor">@android:color/transparent</item>
         <item name="android:background">@android:color/transparent</item>

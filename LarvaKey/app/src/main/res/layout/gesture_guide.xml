@@ -5,10 +5,20 @@
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
+            style="@style/GestureGuide.Cell.Empty" />
+        <TextView
+            style="@style/GestureGuide.Cell"
+            android:text="I" />
+        <TextView
+            style="@style/GestureGuide.Cell.Empty" />
+    </TableRow>
+
+    <TableRow>
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="A" />
+        <TextView
+            style="@style/GestureGuide.Cell.Empty" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="E" />
@@ -16,22 +26,13 @@
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
-        <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
-        <TextView
             style="@style/GestureGuide.Cell"
-            android:text="I" />
-    </TableRow>
-
-    <TableRow>
-        <TextView
-            style="@style/GestureGuide.Cell.Transparent" />
+            android:text="O" />
         <TextView
             style="@style/GestureGuide.Cell"
             android:text="U" />
         <TextView
-            style="@style/GestureGuide.Cell"
+            style="@style/GestureGuide.Cell.Empty"
             android:text="O" />
     </TableRow>
 
