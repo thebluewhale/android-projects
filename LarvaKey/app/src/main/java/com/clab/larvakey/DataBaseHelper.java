@@ -20,7 +20,6 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String COL_USE_NUMBER_ROW = "settings_use_number_row";
     public static final String COL_USE_AUTO_PERIOD = "settings_use_auto_period";
     public static final String COL_USE_BACKKEY_LONGPRESS = "settings_use_backkey_longpress";
-    private CustomVariables mCustomVariables = new CustomVariables();
     public HashMap<String, Integer> mSettingsMap = new HashMap<>();
 
     public DataBaseHelper(@Nullable Context context) {
@@ -30,7 +29,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String query = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(";
-        for (String menu : mCustomVariables.BOOLEAN_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
             query = query + menu + " INTEGER DEFAULT 0,";
         }
         query = query.substring(0, query.length() - 1) + ")";
@@ -51,7 +50,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public boolean insertBoolean(HashMap<String, Integer> map) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        for (String menu : mCustomVariables.BOOLEAN_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
             int value = map.get(menu);
             contentValues.put(menu, value);
         }

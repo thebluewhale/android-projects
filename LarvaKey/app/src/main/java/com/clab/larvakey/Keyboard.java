@@ -18,18 +18,7 @@ import java.util.Queue;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
-    private enum GESTURE_DIRECTION {
-        UP(0), RIGHTUP(1), RIGHT(2), RIGHTDOWN(3),
-        DOWN(4), LEFTDOWN(5), LEFT(6), LEFTUP(7),
-        STARTING_POINT(8), SHOULD_COME_BACK(9);
-        private final int index;
-        private GESTURE_DIRECTION(int index) {
-            this.index = index;
-        }
-        public int toInt() {
-            return index;
-        }
-    }
+
     private final LarvaKeyService mLarvaKeyService;
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
@@ -37,10 +26,9 @@ final class Keyboard {
     private View mGestureGuideView;
     private LayoutInflater mLayoutInflater;
     private PopupWindow mGestureGuideViewContainer = new PopupWindow();
-    private CustomVariables mCustomVariables = new CustomVariables();
     private DataBaseHelper mDataBaseHelper;
     private int mState;
-    private int[] keyIdArr = new int[mCustomVariables.ALPHABET_SIZE];
+    private int[] keyIdArr = new int[Utils.ALPHABET_SIZE];
     private float mGestureInitialX, mGestureInitialY, mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
     private Queue<Float> mGestureXQueue = new LinkedList<>();
     private Queue<Float> mGestureYQueue = new LinkedList<>();
@@ -60,22 +48,25 @@ final class Keyboard {
 
     private String getLabel(String data) {
         if ("SHI".equals(data)) {
-            if (mState == mCustomVariables.STATE_SYMBOL) {
+            if (mState == Utils.STATE_SYMBOL) {
                 return "1/2";
-            } else if (mState == mCustomVariables.STATE_SYMBOL + mCustomVariables.STATE_SHIFT) {
+            } else if (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT) {
                 return "2/2";
             }
             return "↑";
         } else if ("DEL".equals(data)) {
             return "←";
         } else if ("SYM".equals(data)) {
+            if (mState == Utils.STATE_SYMBOL || mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT) {
+                return "abc";
+            }
             return "!#1";
         } else if ("SPA".equals(data)) {
             return "SPACE";
         } else if ("ENT".equals(data)) {
-            return "↩";
+            return "↲";
         } else if ("SET".equals(data)) {
-            return "⚙";
+            return "≡";
         } else {
             return data;
         }
@@ -165,7 +156,7 @@ final class Keyboard {
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.STARTING_POINT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 0);
                     } else {
-                        return true;
+                        return false;
                     }
                 }
 
@@ -229,38 +220,47 @@ final class Keyboard {
         return true;
     }
 
+//    private boolean onSoftkeyLongClick(View view, String data) {
+//        return true;
+//    }
+//
+//    private boolean onSoftkeyClick(View view, String data) {
+//        return true;
+//    }
+
     @SuppressLint("ClickableViewAccessibility")
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
             if (softkey != null) {
                 String rawData = mKeyMapping.valueAt(i);
-                String data = rawData.length() != mCustomVariables.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
+                String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
                 softkey.setText(getLabel(data));
                 final int index = i;
+//                softkey.setOnClickListener((view) -> onSoftkeyClick(view, data));
                 softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
             }
         }
     }
 
     private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
-        if (!mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_SWIPE_POPUP)) {
+        if (!mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
             return;
         }
-        if (!("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
-                "SPA".equals(data) || "ENT".equals(data) || "~".equals(data) ||
-                "!".equals(data) || "^".equals(data) || "?".equals(data) ||
-                ";".equals(data) || ".".equals(data) ||
-                "*".equals(data) || ",".equals(data))) {
-            mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
-            if (mGestureGuideView.getParent() != null) {
-                ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
-            }
-            mGestureGuideViewContainer.setContentView(mGestureGuideView);
-            mGestureGuideViewContainer.setWidth(dpToPx(101));
-            mGestureGuideViewContainer.setHeight(dpToPx(101));
-            mGestureGuideViewContainer.showAtLocation(view, 0, (int)x, (int)y);
+        if (Utils.isFunctionKey(data) ||
+                Utils.isCharacterOrNumber(data.charAt(0)) == CHARACTER_TYPE.SYMBOL ||
+                Utils.isCharacterOrNumber(data.charAt(0)) == CHARACTER_TYPE.NUMBER) {
+            return;
         }
+
+        mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
+        if (mGestureGuideView.getParent() != null) {
+            ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
+        }
+        mGestureGuideViewContainer.setContentView(mGestureGuideView);
+        mGestureGuideViewContainer.setWidth(dpToPx(101));
+        mGestureGuideViewContainer.setHeight(dpToPx(101));
+        mGestureGuideViewContainer.showAtLocation(view, 0, (int)x, (int)y);
     }
 
     private void hideGestureGuide() {
@@ -268,15 +268,15 @@ final class Keyboard {
     }
 
     private void handleTouchDown(String data, int index) {
-        if (mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_VIBRATION_FEEDBACK)) {
+        if (mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_VIBRATION_FEEDBACK)) {
             mLarvaKeyService.getVibratorService().vibrate(
                     VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         }
         if ("SHI".equals(data)) {
-            mState = mState ^ mCustomVariables.STATE_SHIFT;
+            mState = mState ^ Utils.STATE_SHIFT;
             mapKeys();
         } else if ("SYM".equals(data)) {
-            mState = (mState ^ mCustomVariables.STATE_SYMBOL) & ~mCustomVariables.STATE_SHIFT;
+            mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
             mapKeys();
         }
         mLarvaKeyService.handleTouchDown(getTextFromFuncKey(data));
@@ -290,7 +290,7 @@ final class Keyboard {
 
     public void resetKeys() {
         int MED_VAL = 35;
-        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
+        for (int i = 0; i < Utils.ALPHABET_SIZE; i++) {
             TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
             lparam.weight = MED_VAL;
@@ -313,7 +313,7 @@ final class Keyboard {
     }
 
     boolean useDoubleSpaceToPeriod() {
-        return mDataBaseHelper.getSettingValue(mCustomVariables.SETTINGS_USE_AUTO_PERIOD);
+        return mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_AUTO_PERIOD);
     }
 
     private int dpToPx(float dp) {
@@ -380,17 +380,17 @@ final class Keyboard {
         int data_min = Integer.MAX_VALUE;
         int data_sum = 0;
 
-        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
+        for (int i = 0; i < Utils.ALPHABET_SIZE; i++) {
             if (data_max < arr[i]) data_max = arr[i];
             if (data_min > arr[i]) data_min = arr[i];
             data_sum += arr[i];
         }
-        int data_average = (int) Math.round(data_sum * 1.0 / mCustomVariables.ALPHABET_SIZE);
-        int data_gap = (int) Math.round(standardDeviation(arr));
+        int data_average = (int) Math.round(data_sum * 1.0 / Utils.ALPHABET_SIZE);
+        int data_gap = (int) Math.round(Utils.standardDeviation(arr));
         if (data_gap == 0) data_gap = 1;
         float converted_gap = (float) DEFAULT_GAP / data_gap;
 
-        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
+        for (int i = 0; i < Utils.ALPHABET_SIZE; i++) {
             TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
 
@@ -439,27 +439,6 @@ final class Keyboard {
         keyIdArr[23] = R.id.key_pos_2_1;
         keyIdArr[24] = R.id.key_pos_0_5;
         keyIdArr[25] = R.id.key_pos_2_0;
-    }
-
-    private double mean(int[] arr) {
-        int total = 0;
-        for (int i = 0; i < arr.length; i++) {
-            total = total + arr[i];
-        }
-        return total / arr.length;
-    }
-
-    private double variance(int[] arr) {
-        double totalDev = 0;
-        double totalMean = mean(arr);
-        for (int i = 0; i < arr.length; i++) {
-            totalDev = totalDev + Math.pow(totalMean - arr[i], 2);
-        }
-        return totalDev / (arr.length - 1);
-    }
-
-    private double standardDeviation(int[] arr) {
-        return Math.sqrt(variance(arr));
     }
 
     public int getState() {

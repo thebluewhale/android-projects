@@ -9,7 +9,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class Trie {
-    private CustomVariables mCustomVariables = new CustomVariables();
     Node mRoot;
 
     public Trie(Context context) {
@@ -34,7 +33,7 @@ public class Trie {
     }
 
     private class Node {
-        Node[] child = new Node[mCustomVariables.ALPHABET_SIZE];
+        Node[] child = new Node[Utils.ALPHABET_SIZE];
         char val;
         int count;
     }
@@ -61,7 +60,7 @@ public class Trie {
 
     public int[] find(String str) {
         Node current = this.mRoot;
-        int[] ret = new int[mCustomVariables.ALPHABET_SIZE];
+        int[] ret = new int[Utils.ALPHABET_SIZE];
         str = str.toLowerCase();
 
         for (int i = 0; i < str.length(); i++) {
@@ -74,7 +73,7 @@ public class Trie {
             current = current.child[num];
         }
 
-        for (int i = 0; i < mCustomVariables.ALPHABET_SIZE; i++) {
+        for (int i = 0; i < Utils.ALPHABET_SIZE; i++) {
             if (current.child[i] != null) {
                 ret[i] = current.child[i].count;
             }

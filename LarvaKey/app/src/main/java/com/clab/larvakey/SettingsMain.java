@@ -14,7 +14,6 @@ import java.util.HashMap;
 public class SettingsMain extends AppCompatActivity {
     private DataBaseHelper mDataBaseHelper;
     private SharedPreferences mSharedPreferences;
-    private CustomVariables mCustomVariables;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +31,6 @@ public class SettingsMain extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mCustomVariables = new CustomVariables();
         mDataBaseHelper = new DataBaseHelper(this);
 
 //        startActivity(new Intent("android.settings.INPUT_METHOD_SETTINGS"));
@@ -60,7 +58,7 @@ public class SettingsMain extends AppCompatActivity {
         super.onStop();
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         HashMap<String, Integer> settings = new HashMap<>();
-        for (String menu : mCustomVariables.BOOLEAN_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
             boolean value = mSharedPreferences.getBoolean(menu, false);
             settings.put(menu, value ? 1 : 0);
         }

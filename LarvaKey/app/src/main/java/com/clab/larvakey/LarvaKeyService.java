@@ -11,9 +11,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 
 public class LarvaKeyService extends InputMethodService {
-    private enum CHARACTER_TYPE {
-        ALPHABET_LOWERCASE, ALPHABET_UPPERCASE, NUMBER, SYMBOL
-    }
     private InputView mInputView = null;
     private Keyboard mKeyboard = null;
     private InputConnection mInputConnection;
@@ -21,13 +18,11 @@ public class LarvaKeyService extends InputMethodService {
     private Trie mTrie = null;
     private StringBuilder mInputWord = new StringBuilder();
     private DataBaseHelper mDatabaseHelper;
-    private CustomVariables mCustomVariables;
 
     @Override
     public void onCreate() {
         super.onCreate();
         mTrie = new Trie(this);
-        mCustomVariables = new CustomVariables();
         mDatabaseHelper = new DataBaseHelper(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         createKeyboardLayout();
@@ -109,8 +104,8 @@ public class LarvaKeyService extends InputMethodService {
 
     public void enlargeKeysIfNeeded() {
         int state = mKeyboard.getState();
-        if ((state == mCustomVariables.STATE_SYMBOL) ||
-                (state == mCustomVariables.STATE_SYMBOL + mCustomVariables.STATE_SHIFT)) {
+        if ((state == Utils.STATE_SYMBOL) ||
+                (state == Utils.STATE_SYMBOL + Utils.STATE_SHIFT)) {
             enlargeKeys("-");
             return;
         }
@@ -124,25 +119,13 @@ public class LarvaKeyService extends InputMethodService {
 
     private void enlargeKeys(String word) {
         for (int i = 0; i < word.length(); i++) {
-            if (isCharacterOrNumber(word.charAt(i)) == CHARACTER_TYPE.NUMBER ||
-                    isCharacterOrNumber(word.charAt(i)) == CHARACTER_TYPE.SYMBOL) {
+            if (Utils.isCharacterOrNumber(word.charAt(i)) == CHARACTER_TYPE.NUMBER ||
+                    Utils.isCharacterOrNumber(word.charAt(i)) == CHARACTER_TYPE.SYMBOL) {
                 mKeyboard.enlargeKeys(new int[26]);
                 return;
             }
         }
         mKeyboard.enlargeKeys(mTrie.find(word));
-    }
-
-    private CHARACTER_TYPE isCharacterOrNumber(char c) {
-        if (c >= 'a' && c <= 'z') {
-            return CHARACTER_TYPE.ALPHABET_LOWERCASE;
-        } else if (c >= 'A' && c <= 'Z') {
-            return CHARACTER_TYPE.ALPHABET_UPPERCASE;
-        } else if (c >= '0' && c <= '9') {
-            return CHARACTER_TYPE.NUMBER;
-        } else {
-            return CHARACTER_TYPE.SYMBOL;
-        }
     }
 
     private void checkPreInputWord() {
