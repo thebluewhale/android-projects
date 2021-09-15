@@ -31,7 +31,7 @@ public class LarvaKeyService extends InputMethodService {
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
-        resetKeyboardLayout();
+        redrawKeyboard();
         checkPreInputWord();
         enlargeKeysIfNeeded();
     }
@@ -41,10 +41,10 @@ public class LarvaKeyService extends InputMethodService {
         return mInputView;
     }
 
-    private void resetKeyboardLayout() {
+    private void redrawKeyboard() {
         if (mKeyboard != null) {
             createKeyboardLayout();
-            mKeyboard.reset();
+            mKeyboard.redrawKeyboard();
         }
     }
 
@@ -110,7 +110,7 @@ public class LarvaKeyService extends InputMethodService {
             return;
         }
         if (mInputWord.length() == 0 || mInputWord.charAt(mInputWord.length() - 1) == ' ') {
-            mKeyboard.resetKeys();
+            mKeyboard.resetKeyLayout();
             return;
         }
         String[] splitWord = mInputWord.toString().split(" ");

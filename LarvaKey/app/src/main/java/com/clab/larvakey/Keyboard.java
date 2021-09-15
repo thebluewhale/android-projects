@@ -1,8 +1,6 @@
 package com.clab.larvakey;
 
 import android.annotation.SuppressLint;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.TransitionDrawable;
 import android.os.VibrationEffect;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -140,18 +138,20 @@ final class Keyboard {
                 float softkeyWidth = softkey.getWidth();
                 float gestureGuideViewWidth = dpToPx(101);
                 int []outLocation = new int[2];
-                mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
+                view.getLocationInWindow(outLocation);
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
                 float locationY = outLocation[1] - dpToPx((101 - 45) / 2);
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
                 initializeAllGestureDatas(evt.getX(), evt.getY());
                 handleTouchDown(data);
                 createTimer(data);
+                setKeyPressColor(softkey);
                 break;
             case MotionEvent.ACTION_UP:
                 hideGestureGuide();
                 terminateTimer();
                 mLarvaKeyService.enlargeKeysIfNeeded();
+                resetKeyColor(softkey);
                 break;
             case MotionEvent.ACTION_MOVE:
                 float mGestureCurrentX = evt.getX();
@@ -280,20 +280,19 @@ final class Keyboard {
         mLarvaKeyService.handleTouchDown(getTextFromFuncKey(data));
     }
 
-    public void reset() {
+    public void redrawKeyboard() {
         mapKeys();
         mState = 0;
     }
 
-    public void resetKeys() {
+    public void resetKeyLayout() {
         int MED_VAL = 35;
         for (int i = 0; i < Utils.ALPHABET_SIZE; i++) {
             TextView softkey = mKeyboardView.findViewById(keyIdArr[i]);
             LinearLayout.LayoutParams lparam = (LinearLayout.LayoutParams)softkey.getLayoutParams();
             lparam.weight = MED_VAL;
             softkey.setLayoutParams(lparam);
-            Drawable drawable = softkey.getBackground();
-            ((TransitionDrawable) drawable).resetTransition();
+            resetKeyColor(softkey);
         }
     }
 
@@ -400,13 +399,24 @@ final class Keyboard {
             lparam.weight = converted_val;
             softkey.setLayoutParams(lparam);
 
-            Drawable drawable = softkey.getBackground();
             if (lparam.weight > HIGHLIGHT_VAL) {
-                ((TransitionDrawable) drawable).startTransition(300);
+                setKeyHighlightColor(softkey);
             } else {
-                ((TransitionDrawable) drawable).resetTransition();
+                resetKeyColor(softkey);
             }
         }
+    }
+
+    private void setKeyPressColor(TextView softkey) {
+        softkey.setBackgroundResource(R.drawable.softkey_shape_press);
+    }
+
+    private void setKeyHighlightColor(TextView softkey) {
+        softkey.setBackgroundResource(R.drawable.softkey_shape_highlight);
+    }
+
+    private void resetKeyColor(TextView softkey) {
+        softkey.setBackgroundResource(R.drawable.softkey_shape_normal);
     }
 
     private void createKeyIdArray() {
