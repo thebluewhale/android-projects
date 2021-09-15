@@ -130,12 +130,13 @@ final class Keyboard {
         return mKeyboardView;
     }
 
-    private boolean onSoftkeyTouch(View view, MotionEvent evt, TextView softkey, int index, String data) {
+    private boolean onSoftkeyTouch(View view, MotionEvent evt, int index, String data) {
         int action = evt.getActionMasked();
+        TextView softkey = (TextView) view;
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                showGestureGuideIfNeeded(view, softkey, data);
+                showGestureGuideIfNeeded(softkey, data);
                 initializeAllGestureDatas(evt.getX(), evt.getY());
                 handleTouchDown(data);
                 createTimer(data);
@@ -151,18 +152,15 @@ final class Keyboard {
                 float mGestureCurrentX = evt.getX();
                 float mGestureCurrentY = evt.getY();
 
+                if (isGestureInsideOfKey(softkey, mGestureCurrentX, mGestureCurrentY)) {
+                    initializeAllGestureDatas(mGestureCurrentX, mGestureCurrentY);
+                    return true;
+                }
                 if (getGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK)) {
-                    // TODO: gestureCameBack 플래그를 사용할 것이 아니라,
-                    // 제스처가 softkey 밖으로 나가면 그때부터 gestureKeyEventQueue에 담아서 궤적을 계산하고
-                    // softkey 안에서 움직이는 move 이벤트는 모두 무시하는 것으로 로직을 짜볼 필요가 있음.
-                    if (isGestureCameBack(mGestureInitialX, mGestureInitialY, mGestureCurrentX, mGestureCurrentY)) {
-                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.STARTING_POINT, 1);
-                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 0);
-                    } else {
-                        return true;
-                    }
+                    return true;
                 }
 
+                terminateTimer();
                 addGestureEventIntoQueue(mGestureCurrentX, mGestureCurrentY);
 
                 float distX = mGestureCurrentX - mGestureBaseX;
@@ -173,8 +171,6 @@ final class Keyboard {
                     return true;
                 }
 
-                terminateTimer();
-
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
@@ -184,10 +180,6 @@ final class Keyboard {
                     }
                 } else if (angle >= -67.5 && angle <= -22.5) {
                     // RightUp
-//                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
-//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
-//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
-//                    }
                     updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
@@ -198,10 +190,6 @@ final class Keyboard {
                     }
                 } else if (angle >= 22.5 && angle <= 67.5) {
                     // RightDown
-//                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
-//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
-//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
-//                    }
                     updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 } else if (angle > 67.5 && angle < 112.5) {
                     // Down
@@ -226,10 +214,6 @@ final class Keyboard {
                     }
                 } else if (angle >= -157.5 && angle <= -112.5) {
                     //  LeftUp
-//                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP)) {
-//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP, 1);
-//                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
-//                    }
                     updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                 }
                 break;
@@ -248,16 +232,16 @@ final class Keyboard {
                 String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
                 softkey.setText(getLabel(data));
                 final int index = i;
-                softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
+                softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, index, data));
             }
         }
     }
 
-    private void showGestureGuideIfNeeded(View view, TextView softkey, String data) {
+    private void showGestureGuideIfNeeded(TextView softkey, String data) {
         float softkeyWidth = softkey.getWidth();
         float gestureGuideViewWidth = dpToPx(101);
         int []outLocation = new int[2];
-        view.getLocationInWindow(outLocation);
+        softkey.getLocationInWindow(outLocation);
         float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
         float locationY = outLocation[1] - dpToPx(101);
         if (!mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
@@ -276,7 +260,7 @@ final class Keyboard {
         mGestureGuideViewContainer.setContentView(mGestureGuideView);
         mGestureGuideViewContainer.setWidth(dpToPx(101));
         mGestureGuideViewContainer.setHeight(dpToPx(101));
-        mGestureGuideViewContainer.showAtLocation(view, 0, Math.round(locationX), Math.round(locationY));
+        mGestureGuideViewContainer.showAtLocation(softkey, 0, Math.round(locationX), Math.round(locationY));
     }
 
     private void hideGestureGuide() {
@@ -343,13 +327,13 @@ final class Keyboard {
     }
 
     private void addGestureEventIntoQueue(float x, float y) {
-        if (mGestureXQueue.size() < 10) {
+        if (mGestureXQueue.size() < Utils.GESTURE_QUEUE_SIZE) {
             mGestureXQueue.add(x);
         } else {
             mGestureBaseX = mGestureXQueue.poll();
             mGestureXQueue.add(x);
         }
-        if (mGestureYQueue.size() < 10) {
+        if (mGestureYQueue.size() < Utils.GESTURE_QUEUE_SIZE) {
             mGestureYQueue.add(y);
         } else {
             mGestureBaseY = mGestureYQueue.poll();
@@ -379,10 +363,19 @@ final class Keyboard {
         mGestureInitialY = mGestureBaseY = mGestureCurrentY = y;
     }
 
-    private boolean isGestureCameBack(float initialX, float initialY, float currentX, float currentY) {
-        float distX = (float) Math.pow(initialX - currentX, 2);
-        float distY = (float) Math.pow(initialY - currentY, 2);
-        return Math.sqrt(distX + distY) < dpToPx(5);
+    private boolean isGestureInsideOfKey(TextView softkey, float currentX, float currentY) {
+        int[] location = new int[2];
+        softkey.getLocationInWindow(location);
+        float x1 = location[0];
+        float y1 = location[1];
+        float x2 = x1 + softkey.getWidth();
+        float y2 = y1 + softkey.getHeight();
+        float gestureX = currentX + x1;
+        float gestureY = currentY + y1;
+        if (gestureX >= x1 && gestureY >= y1 && gestureX <= x2 && gestureY <= y2) {
+            return true;
+        }
+        return false;
     }
 
     public void enlargeKeys(int[] arr) {
