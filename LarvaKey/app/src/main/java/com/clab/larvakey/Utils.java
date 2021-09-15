@@ -25,6 +25,9 @@ public class Utils {
     static int STATE_SYMBOL = 2;
     static int STATE_NUMBER = 4;
 
+    static int LONGPRESS_TIMER_DELAY = 1000;
+    static int LONGPRESS_TIMER_PERIOD = 200;
+
     static CHARACTER_TYPE isCharacterOrNumber(char c) {
         if (c >= 'a' && c <= 'z') {
             return CHARACTER_TYPE.ALPHABET_LOWERCASE;

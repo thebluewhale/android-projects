@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /** Controls the visible virtual keyboard view. */
 final class Keyboard {
@@ -33,6 +35,8 @@ final class Keyboard {
     private Queue<Float> mGestureXQueue = new LinkedList<>();
     private Queue<Float> mGestureYQueue = new LinkedList<>();
     private int[] mGestureDirectionUsedFlag = new int[10];
+    private Timer mLongPressTimer;
+    private TimerTask mLongPressTimerTask;
 
     private Keyboard(LarvaKeyService larvaKeyService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -129,23 +133,25 @@ final class Keyboard {
     }
 
     private boolean onSoftkeyTouch(View view, MotionEvent evt, TextView softkey, int index, String data) {
-        int []outLocation = new int[2];
-        mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
-        float density = mLarvaKeyService.getResources().getDisplayMetrics().density;
         int action = evt.getActionMasked();
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 float softkeyWidth = softkey.getWidth();
-                float gestureGuideViewWidth = Math.round(101 * density + 0.5);
+                float gestureGuideViewWidth = dpToPx(101);
+                int []outLocation = new int[2];
+                mKeyboardView.findViewById(mKeyMapping.keyAt(index)).getLocationInWindow(outLocation);
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
-                float locationY = outLocation[1] - Math.round((101 - 45) / 2 * density + 0.5);
+                float locationY = outLocation[1] - dpToPx((101 - 45) / 2);
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
                 initializeAllGestureDatas(evt.getX(), evt.getY());
-                handleTouchDown(data, index);
+                handleTouchDown(data);
+                createTimer(data);
                 break;
             case MotionEvent.ACTION_UP:
                 hideGestureGuide();
+                terminateTimer();
+                mLarvaKeyService.enlargeKeysIfNeeded();
                 break;
             case MotionEvent.ACTION_MOVE:
                 float mGestureCurrentX = evt.getX();
@@ -156,7 +162,7 @@ final class Keyboard {
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.STARTING_POINT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 0);
                     } else {
-                        return false;
+                        return true;
                     }
                 }
 
@@ -166,40 +172,41 @@ final class Keyboard {
                 float distY = mGestureCurrentY - mGestureBaseY;
                 float angle = (float) Math.toDegrees(Math.atan2(distY, distX));
 
-                if (Math.abs(distX) < dpToPx(30) && Math.abs(distY) < dpToPx(30)) return false;
+                if (Math.abs(distX) < dpToPx(30) && Math.abs(distY) < dpToPx(30)) return true;
+                terminateTimer();
 
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
-                        mLarvaKeyService.handleTouchDown("a");
+                        handleTouchDown("a");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= -67.5 && angle <= -22.5) {
                     // RightUp
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
-                        mLarvaKeyService.handleTouchDown("e");
+                        handleTouchDown("e");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
-                        mLarvaKeyService.handleTouchDown("i");
+                        handleTouchDown("i");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= 22.5 && angle <= 67.5) {
                     // RightDown
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
-                        mLarvaKeyService.handleTouchDown("o");
+                        handleTouchDown("o");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle > 67.5 && angle < 112.5) {
                     // Down
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN)) {
-                        mLarvaKeyService.handleTouchDown("u");
+                        handleTouchDown("u");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
@@ -220,14 +227,6 @@ final class Keyboard {
         return true;
     }
 
-//    private boolean onSoftkeyLongClick(View view, String data) {
-//        return true;
-//    }
-//
-//    private boolean onSoftkeyClick(View view, String data) {
-//        return true;
-//    }
-
     @SuppressLint("ClickableViewAccessibility")
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
@@ -237,7 +236,6 @@ final class Keyboard {
                 String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
                 softkey.setText(getLabel(data));
                 final int index = i;
-//                softkey.setOnClickListener((view) -> onSoftkeyClick(view, data));
                 softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
             }
         }
@@ -267,7 +265,7 @@ final class Keyboard {
         mGestureGuideViewContainer.dismiss();
     }
 
-    private void handleTouchDown(String data, int index) {
+    private void handleTouchDown(String data) {
         if (mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_VIBRATION_FEEDBACK)) {
             mLarvaKeyService.getVibratorService().vibrate(
                     VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -280,7 +278,6 @@ final class Keyboard {
             mapKeys();
         }
         mLarvaKeyService.handleTouchDown(getTextFromFuncKey(data));
-        mLarvaKeyService.enlargeKeysIfNeeded();
     }
 
     public void reset() {
@@ -443,5 +440,25 @@ final class Keyboard {
 
     public int getState() {
         return mState;
+    }
+
+    private void createTimer(String data) {
+        if (!data.equals("DEL")) {
+            return;
+        }
+        mLongPressTimer = new Timer();
+        mLongPressTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                handleTouchDown(data);
+            }
+        };
+        mLongPressTimer.schedule(mLongPressTimerTask, Utils.LONGPRESS_TIMER_DELAY, Utils.LONGPRESS_TIMER_PERIOD);
+    }
+
+    private void terminateTimer() {
+        if (mLongPressTimer != null) {
+            mLongPressTimer.cancel();
+        }
     }
 }
