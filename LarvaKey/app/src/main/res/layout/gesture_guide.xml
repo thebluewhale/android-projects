@@ -7,33 +7,32 @@
         <TextView
             style="@style/GestureGuide.Cell.Empty" />
         <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="I" />
+            android:id="@+id/gesture_guide_0_1"
+            style="@style/GestureGuide.Cell" />
         <TextView
             style="@style/GestureGuide.Cell.Empty" />
     </TableRow>
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="A" />
+            android:id="@+id/gesture_guide_1_0"
+            style="@style/GestureGuide.Cell" />
         <TextView
             style="@style/GestureGuide.Cell.Empty" />
         <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="E" />
+            android:id="@+id/gesture_guide_1_2"
+            style="@style/GestureGuide.Cell" />
     </TableRow>
 
     <TableRow>
         <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="O" />
+            android:id="@+id/gesture_guide_2_0"
+            style="@style/GestureGuide.Cell" />
         <TextView
-            style="@style/GestureGuide.Cell"
-            android:text="U" />
+            android:id="@+id/gesture_guide_2_1"
+            style="@style/GestureGuide.Cell" />
         <TextView
-            style="@style/GestureGuide.Cell.Empty"
-            android:text="O" />
+            style="@style/GestureGuide.Cell.Empty" />
     </TableRow>
 
 </TableLayout>

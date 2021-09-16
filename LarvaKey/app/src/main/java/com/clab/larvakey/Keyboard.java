@@ -35,6 +35,7 @@ final class Keyboard {
     private int[] mGestureDirectionUsedFlag = new int[10];
     private Timer mLongPressTimer;
     private TimerTask mLongPressTimerTask;
+    private int mLongPressTimerFlag;
 
     private Keyboard(LarvaKeyService larvaKeyService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -254,6 +255,13 @@ final class Keyboard {
         }
 
         mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
+
+        ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_0_1)).setText(mState == Utils.STATE_SHIFT ? "I" : "i");
+        ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_1_0)).setText(mState == Utils.STATE_SHIFT ? "A" : "a");
+        ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_1_2)).setText(mState == Utils.STATE_SHIFT ? "E" : "e");
+        ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_2_0)).setText(mState == Utils.STATE_SHIFT ? "O" : "o");
+        ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_2_1)).setText(mState == Utils.STATE_SHIFT ? "U" : "u");
+
         if (mGestureGuideView.getParent() != null) {
             ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
         }
@@ -279,7 +287,7 @@ final class Keyboard {
             mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
             mapKeys();
         }
-        mLarvaKeyService.handleTouchDown(getTextFromFuncKey(data));
+        mLarvaKeyService.handleTouchDown(data);
     }
 
     public void redrawKeyboard() {
@@ -300,14 +308,6 @@ final class Keyboard {
 
     private void initializeDataBaseHelper() {
         mDataBaseHelper = mLarvaKeyService.getDataBaseHelper();
-    }
-
-    private String getTextFromFuncKey(String data) {
-        if ("VOWEL".equals(data)) {
-            return "";
-        } else {
-            return data;
-        }
     }
 
     boolean useDoubleSpaceToPeriod() {
@@ -464,14 +464,22 @@ final class Keyboard {
     }
 
     private void createTimer(String data) {
-        if (!data.equals("DEL")) {
+        if (!data.equals("DEL") ||
+                !mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_BACKKEY_LONGPRESS)) {
             return;
         }
+        mLongPressTimerFlag = 0;
         mLongPressTimer = new Timer();
         mLongPressTimerTask = new TimerTask() {
             @Override
             public void run() {
-                handleTouchDown(data);
+                if (mLongPressTimerFlag > 10) {
+                    handleTouchDown(data);
+                }
+                if (mLongPressTimerFlag % 2 == 1) {
+                    handleTouchDown(data);
+                }
+                mLongPressTimerFlag++;
             }
         };
         mLongPressTimer.schedule(mLongPressTimerTask, Utils.LONGPRESS_TIMER_DELAY, Utils.LONGPRESS_TIMER_PERIOD);

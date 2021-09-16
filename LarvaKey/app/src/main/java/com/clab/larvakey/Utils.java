@@ -11,22 +11,14 @@ public class Utils {
     static String SETTINGS_USE_SWIPE_POPUP = "settings_use_swipe_popup";
     static String SETTINGS_USE_VIBRATION_FEEDBACK = "settings_use_vibration_feedback";
     static String SETTINGS_USE_AUTO_PERIOD = "settings_use_auto_period";
-    static String SETTINGS_USE_NUMBER_ROW = "settings_use_number_row";
-    static String GESTURE_DIRECTION_UP = "GESTURE_DIRECTION_UP";
-    static String GESTURE_DIRECTION_RIGHTUP = "GESTURE_DIRECTION_RIGHTUP";
-    static String GESTURE_DIRECTION_RIGHT = "GESTURE_DIRECTION_RIGHT";
-    static String GESTURE_DIRECTION_RIGHTDOWN = "GESTURE_DIRECTION_RIGHTDOWN";
-    static String GESTURE_DIRECTION_DOWN = "GESTURE_DIRECTION_DOWN";
-    static String GESTURE_DIRECTION_LEFTDOWN = "GESTURE_DIRECTION_LEFTDOWN";
-    static String GESTURE_DIRECTION_LEFT = "GESTURE_DIRECTION_LEFT";
-    static String GESTURE_DIRECTION_LEFTUP = "GESTURE_DIRECTION_LEFTUP";
+    static String SETTINGS_USE_BACKKEY_LONGPRESS = "settings_use_backkey_longpress";
 
     static int STATE_SHIFT = 1;
     static int STATE_SYMBOL = 2;
     static int STATE_NUMBER = 4;
 
     static int LONGPRESS_TIMER_DELAY = 1000;
-    static int LONGPRESS_TIMER_PERIOD = 200;
+    static int LONGPRESS_TIMER_PERIOD = 100;
 
     static int GESTURE_QUEUE_SIZE = 20;
 
