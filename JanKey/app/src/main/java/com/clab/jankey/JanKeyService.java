@@ -14,7 +14,6 @@ public class JanKeyService extends InputMethodService {
     private Keyboard mKeyboard = null;
     private InputConnection mInputConnection;
     private boolean isCaps = false;
-    private StringBuilder mInputWord = new StringBuilder();
     private DataBaseHelper mDatabaseHelper;
     private CustomVariables mCustomVariables;
 
@@ -55,15 +54,16 @@ public class JanKeyService extends InputMethodService {
     }
 
     boolean checkDoubleSpaceToPeriod() {
-        if ((mKeyboard.useDoubleSpaceToPeriod() == false) ||
-                (mInputWord.length() == 0) ||
-                (!Character.toString(mInputWord.charAt(mInputWord.length() - 1)).equals(" "))) {
+        if ((mKeyboard.useDoubleSpaceToPeriod() == false)) {
+            return false;
+        }
+        CharSequence lastText = mInputConnection.getTextBeforeCursor(1, 0);
+        char last = lastText.length() > 0 ? lastText.charAt(0) : 'x';
+        if (last != ' ') {
             return false;
         }
         mInputConnection.deleteSurroundingText(1, 0);
         mInputConnection.commitText(".", 1);
-        mInputWord.deleteCharAt(mInputWord.length() - 1);
-        mInputWord.append(".");
         return true;
     }
 
@@ -73,22 +73,15 @@ public class JanKeyService extends InputMethodService {
         mInputConnection = getCurrentInputConnection();
         if ("DEL".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-            if (mInputWord.length() > 0) {
-                mInputWord.deleteCharAt(mInputWord.length() - 1);
-            }
         } else if ("ENT".equals(data)) {
             mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-            mInputWord.append(" ");
         } else if ("SPA".equals(data)) {
             if (checkDoubleSpaceToPeriod() == false) {
                 mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
-                mInputWord.append(" ");
             }
-            System.out.println("MYLOG | [" + mInputWord.toString() + "]");
         } else {
             char c = data.charAt(0);
             mInputConnection.commitText(data, 1);
-            mInputWord.append(data);
         }
     }
 
