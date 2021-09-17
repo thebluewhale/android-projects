@@ -50,29 +50,30 @@ final class Keyboard {
         createKeyIdArray();
     }
 
-    private String getLabel(String data) {
-        if ("SHI".equals(data)) {
-            if (mState == Utils.STATE_SYMBOL) {
-                return "1/2";
-            } else if (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT) {
-                return "2/2";
-            }
-            return "↑";
-        } else if ("DEL".equals(data)) {
-            return "←";
-        } else if ("SYM".equals(data)) {
-            if (mState == Utils.STATE_SYMBOL || mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT) {
-                return "abc";
-            }
-            return "!#1";
-        } else if ("SPA".equals(data)) {
-            return "SPACE";
-        } else if ("ENT".equals(data)) {
-            return "↲";
-        } else if ("SET".equals(data)) {
-            return "≡";
-        } else {
-            return data;
+    private String getLabelFromRawString(String data) {
+        switch (data) {
+            case "SHI":
+                if (mState == Utils.STATE_SYMBOL) {
+                    return "1/2";
+                } else if (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT) {
+                    return "2/2";
+                }
+                return "↑";
+            case "DEL":
+                return "←";
+            case "SYM":
+                if (mState == Utils.STATE_SYMBOL || mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT) {
+                    return "abc";
+                }
+                return "!#1";
+            case "SPA":
+                return "SPACE";
+            case "ENT":
+                return "↲";
+            case "SET":
+                return "≡";
+            default:
+                return data;
         }
     }
 
@@ -234,7 +235,7 @@ final class Keyboard {
             if (softkey != null) {
                 String rawData = mKeyMapping.valueAt(i);
                 String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
-                softkey.setText(getLabel(data));
+                softkey.setText(getLabelFromRawString(data));
                 final int index = i;
                 softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, index, data));
             }
