@@ -13,15 +13,11 @@ import android.view.inputmethod.InputConnection;
 public class CheaBoardService extends InputMethodService {
     private InputView mInputView = null;
     private Keyboard mKeyboard = null;
-    private InputConnection mInputConnection;
-    private boolean isCaps = false;
-    private Trie mTrie = null;
     private DataBaseHelper mDatabaseHelper;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mTrie = new Trie(this);
         mDatabaseHelper = new DataBaseHelper(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         createKeyboardLayout();
@@ -30,7 +26,7 @@ public class CheaBoardService extends InputMethodService {
     @Override
     public void onStartInput(EditorInfo attribute, boolean restarting) {
         super.onStartInput(attribute, restarting);
-        redrawKeyboard();
+        reDrawKeyboard();
     }
 
     @Override
@@ -38,15 +34,15 @@ public class CheaBoardService extends InputMethodService {
         return mInputView;
     }
 
-    private void redrawKeyboard() {
+    private void reDrawKeyboard() {
         if (mKeyboard != null) {
             createKeyboardLayout();
-            mKeyboard.redrawKeyboard();
+            mKeyboard.reDrawKeyboard();
         }
     }
 
     private void createKeyboardLayout() {
-        mKeyboard = Keyboard.qwerty(this);
+        mKeyboard = Keyboard.createQwertyKeyboard(this);
         mInputView.addView(mKeyboard.inflateKeyboardView(LayoutInflater.from(this), mInputView));
     }
 
@@ -66,36 +62,20 @@ public class CheaBoardService extends InputMethodService {
 //        return true;
 //    }
 
-    public void handleTouchDown(String data) {
-        mInputConnection = getCurrentInputConnection();
-        if ("DEL".equals(data)) {
-            mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-            if (InputWordController.get().getLength() > 0) {
-                InputWordController.get().deleteLastWord();
-            }
-        } else if ("ENT".equals(data)) {
-            mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-        } else if ("SPA".equals(data)) {
-            mInputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
-            InputWordController.get().appendWord(' ');
-        } else if ("SET".equals(data)) {
-            // show settings page
-            Intent intent = new Intent(this, SettingsMain.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        } else if ("SHI".equals(data) || "SYM".equals(data)) {
-            // do nothing
-        } else {
-            char c = data.charAt(0);
-            mInputConnection.commitText(data, 1);
-            InputWordController.get().appendWord(c);
-        }
-    }
-
     public DataBaseHelper getDataBaseHelper() {
         if (mDatabaseHelper == null) {
             mDatabaseHelper = new DataBaseHelper(this);
         }
         return mDatabaseHelper;
+    }
+
+    public InputConnection getInputConnection() {
+        return getCurrentInputConnection();
+    }
+
+    public void startSettingsActivity() {
+        Intent intent = new Intent(this, SettingsMain.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }

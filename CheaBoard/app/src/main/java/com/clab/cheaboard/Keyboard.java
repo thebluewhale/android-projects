@@ -1,12 +1,13 @@
 package com.clab.cheaboard;
 
-import android.annotation.SuppressLint;
 import android.os.VibrationEffect;
 import android.util.SparseArray;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputConnection;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -34,19 +35,19 @@ final class Keyboard {
     private final int[] mGestureDirectionUsedFlag = new int[10];
     private Timer mLongPressTimer;
     private int mLongPressTimerFlag;
-    private Trie mTrie;
+    private final Trie mTrie;
 
     private Keyboard(CheaBoardService cheaBoardService, int viewResId,
                      SparseArray<String> keyMapping) {
-        this.mCheaBoardService = cheaBoardService;
-        this.mViewResId = viewResId;
-        this.mKeyMapping = keyMapping;
-        this.mState = 0;
+        mCheaBoardService = cheaBoardService;
+        mViewResId = viewResId;
+        mKeyMapping = keyMapping;
+        mState = 0;
+        mTrie = new Trie(cheaBoardService);
 
         initializeDataBaseHelper();
         initializeGestureDirectionUsedFlag();
         createKeyIdArray();
-        mTrie = new Trie(mCheaBoardService);
     }
 
     private String getLabel(String data) {
@@ -75,7 +76,7 @@ final class Keyboard {
         }
     }
 
-    static Keyboard qwerty(CheaBoardService cheaBoardService) {
+    static Keyboard createQwertyKeyboard(CheaBoardService cheaBoardService) {
         SparseArray<String> keyMapping = new SparseArray<>();
         keyMapping.put(R.id.key_pos_num_0, "0");
         keyMapping.put(R.id.key_pos_num_1, "1");
@@ -150,6 +151,9 @@ final class Keyboard {
                 resetKeyColor(softkey);
                 break;
             case MotionEvent.ACTION_MOVE:
+                if (Utils.isFunctionKey(data)) {
+                    return true;
+                }
                 float mGestureCurrentX = evt.getX();
                 float mGestureCurrentY = evt.getY();
 
@@ -224,7 +228,6 @@ final class Keyboard {
         return true;
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     private void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
@@ -280,17 +283,41 @@ final class Keyboard {
             mCheaBoardService.getVibratorService().vibrate(
                     VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
         }
-        if ("SHI".equals(data)) {
-            mState = mState ^ Utils.STATE_SHIFT;
-            mapKeys();
-        } else if ("SYM".equals(data)) {
-            mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
-            mapKeys();
+
+        InputConnection inputConnection = mCheaBoardService.getInputConnection();
+        switch (data) {
+            case "DEL":
+                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+                if (InputWordController.get().getLength() > 0) {
+                    InputWordController.get().deleteLastWord();
+                }
+                break;
+            case "ENT":
+                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+                break;
+            case "SPA":
+                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
+                InputWordController.get().appendWord(' ');
+                break;
+            case "SET":
+                mCheaBoardService.startSettingsActivity();
+                break;
+            case "SHI":
+                mState = mState ^ Utils.STATE_SHIFT;
+                mapKeys();
+                break;
+            case "SYM":
+                mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
+                mapKeys();
+                break;
+            default:
+                char c = data.charAt(0);
+                inputConnection.commitText(data, 1);
+                InputWordController.get().appendWord(c);
         }
-        mCheaBoardService.handleTouchDown(data);
     }
 
-    public void redrawKeyboard() {
+    public void reDrawKeyboard() {
         mapKeys();
         mState = 0;
         checkPreInputWord();
@@ -309,7 +336,7 @@ final class Keyboard {
 
     private void checkPreInputWord() {
         InputWordController.get().resetWord(
-                mCheaBoardService.getCurrentInputConnection().getTextBeforeCursor(100, 0).toString());
+                mCheaBoardService.getInputConnection().getTextBeforeCursor(100, 0).toString());
     }
 
     private void initializeDataBaseHelper() {
@@ -427,7 +454,6 @@ final class Keyboard {
     public void enlargeKeysIfNeeded() {
         if ((mState == Utils.STATE_SYMBOL) ||
                 (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT)) {
-//            enlargeKeys(new int[26]);
             resetKeyLayout();
             return;
         }
@@ -438,7 +464,15 @@ final class Keyboard {
         }
 
         String[] splitWord = InputWordController.get().getWord().split(" ");
-        enlargeKeys(mTrie.find(splitWord[splitWord.length - 1]));
+        String lastWord = splitWord[splitWord.length - 1];
+        for (int i = 0; i < lastWord.length(); i++) {
+            if (Utils.isCharacterOrNumber(lastWord.charAt(i)) == CHARACTER_TYPE.NUMBER ||
+                    Utils.isCharacterOrNumber(lastWord.charAt(i)) == CHARACTER_TYPE.SYMBOL) {
+                resetKeyLayout();
+                return;
+            }
+        }
+        enlargeKeys(mTrie.find(lastWord));
     }
 
     private void setKeyPressColor(TextView softkey) {

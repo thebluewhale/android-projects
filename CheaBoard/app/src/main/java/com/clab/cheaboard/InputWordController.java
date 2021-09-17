@@ -1,7 +1,5 @@
 package com.clab.cheaboard;
 
-import android.renderscript.ScriptGroup;
-
 public class InputWordController {
     private static InputWordController instance;
     private StringBuilder mInputWord;
