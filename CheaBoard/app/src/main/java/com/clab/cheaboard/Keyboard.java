@@ -141,7 +141,7 @@ final class Keyboard {
             case MotionEvent.ACTION_DOWN:
                 showGestureGuideIfNeeded(softkey, data);
                 initializeAllGestureDatas(evt.getX(), evt.getY());
-                handleTouchDown(data);
+                handleInputEvent(data);
                 createTimer(data);
                 setKeyPressColor(softkey);
                 break;
@@ -180,7 +180,7 @@ final class Keyboard {
                 if (angle < -67.5 && angle > -112.5) {
                     // Up
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
-                        handleTouchDown("i");
+                        handleInputEvent(mState == Utils.STATE_SHIFT ? "I" : "i");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
@@ -190,7 +190,7 @@ final class Keyboard {
                 } else if (angle > -22.5 && angle < 22.5) {
                     // Right
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
-                        handleTouchDown("e");
+                        handleInputEvent(mState == Utils.STATE_SHIFT ? "E" :"e");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
@@ -200,21 +200,21 @@ final class Keyboard {
                 } else if (angle > 67.5 && angle < 112.5) {
                     // Down
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN)) {
-                        handleTouchDown("u");
+                        handleInputEvent(mState == Utils.STATE_SHIFT ? "U" : "u");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= 112.5 && angle < 157.5) {
                     // LeftDown
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN)) {
-                        handleTouchDown("o");
+                        handleInputEvent(mState == Utils.STATE_SHIFT ? "O" : "o");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
                 } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
                     // Left
                     if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT)) {
-                        handleTouchDown("a");
+                        handleInputEvent(mState == Utils.STATE_SHIFT ? "A" : "a");
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT, 1);
                         updateGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK, 1);
                     }
@@ -279,7 +279,7 @@ final class Keyboard {
         mGestureGuideViewContainer.dismiss();
     }
 
-    private void handleTouchDown(String data) {
+    private void handleInputEvent(String data) {
         if (mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_VIBRATION_FEEDBACK)) {
             mCheaBoardService.getVibratorService().vibrate(
                     VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
@@ -532,10 +532,10 @@ final class Keyboard {
             @Override
             public void run() {
                 if (mLongPressTimerFlag > 10) {
-                    handleTouchDown(data);
+                    handleInputEvent(data);
                 }
                 if (mLongPressTimerFlag % 2 == 1) {
-                    handleTouchDown(data);
+                    handleInputEvent(data);
                 }
                 mLongPressTimerFlag++;
             }
