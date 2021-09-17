@@ -32,19 +32,6 @@ public class SettingsMain extends AppCompatActivity {
         }
 
         mDataBaseHelper = new DataBaseHelper(this);
-
-//        startActivity(new Intent("android.settings.INPUT_METHOD_SETTINGS"));
-//        InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(INPUT_METHOD_SERVICE);
-//        imm.showInputMethodPicker();
-//        List<InputMethodInfo> list = imm.getEnabledInputMethodList();
-//        // check if our keyboard is enabled as input method
-//        for (InputMethodInfo inputMethod : list) {
-//            String packageName = inputMethod.getPackageName();
-//            System.out.println("MYLOG | " + packageName);
-//            if (packageName.equals("com.example.mykeyboard")) {
-//                Toast.makeText(getApplicationContext(),"Your Keyboard Enable",Toast.LENGTH_SHORT).show();
-//            }
-//        }
     }
 
     @Override

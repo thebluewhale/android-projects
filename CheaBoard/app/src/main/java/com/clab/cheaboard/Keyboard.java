@@ -23,19 +23,18 @@ final class Keyboard {
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
-    private View mGestureGuideView;
     private LayoutInflater mLayoutInflater;
-    private PopupWindow mGestureGuideViewContainer = new PopupWindow();
+    private final PopupWindow mGestureGuideViewContainer = new PopupWindow();
     private DataBaseHelper mDataBaseHelper;
     private int mState;
-    private int[] keyIdArr = new int[Utils.ALPHABET_SIZE];
-    private float mGestureInitialX, mGestureInitialY, mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
-    private Queue<Float> mGestureXQueue = new LinkedList<>();
-    private Queue<Float> mGestureYQueue = new LinkedList<>();
-    private int[] mGestureDirectionUsedFlag = new int[10];
+    private final int[] keyIdArr = new int[Utils.ALPHABET_SIZE];
+    private float mGestureBaseX, mGestureBaseY;
+    private final Queue<Float> mGestureXQueue = new LinkedList<>();
+    private final Queue<Float> mGestureYQueue = new LinkedList<>();
+    private final int[] mGestureDirectionUsedFlag = new int[10];
     private Timer mLongPressTimer;
-    private TimerTask mLongPressTimerTask;
     private int mLongPressTimerFlag;
+    private Trie mTrie;
 
     private Keyboard(CheaBoardService cheaBoardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -47,6 +46,7 @@ final class Keyboard {
         initializeDataBaseHelper();
         initializeGestureDirectionUsedFlag();
         createKeyIdArray();
+        mTrie = new Trie(mCheaBoardService);
     }
 
     private String getLabel(String data) {
@@ -146,7 +146,7 @@ final class Keyboard {
             case MotionEvent.ACTION_UP:
                 hideGestureGuide();
                 terminateTimer();
-                mCheaBoardService.enlargeKeysIfNeeded();
+                enlargeKeysIfNeeded();
                 resetKeyColor(softkey);
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -254,7 +254,7 @@ final class Keyboard {
             return;
         }
 
-        mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
+        View mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide, null);
 
         ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_0_1)).setText(mState == Utils.STATE_SHIFT ? "I" : "i");
         ((TextView) mGestureGuideView.findViewById(R.id.gesture_guide_1_0)).setText(mState == Utils.STATE_SHIFT ? "A" : "a");
@@ -293,6 +293,7 @@ final class Keyboard {
     public void redrawKeyboard() {
         mapKeys();
         mState = 0;
+        checkPreInputWord();
     }
 
     public void resetKeyLayout() {
@@ -304,6 +305,11 @@ final class Keyboard {
             softkey.setLayoutParams(lparam);
             resetKeyColor(softkey);
         }
+    }
+
+    private void checkPreInputWord() {
+        InputWordController.get().resetWord(
+                mCheaBoardService.getCurrentInputConnection().getTextBeforeCursor(100, 0).toString());
     }
 
     private void initializeDataBaseHelper() {
@@ -359,8 +365,8 @@ final class Keyboard {
     private void initializeAllGestureDatas(float x, float y) {
         initializeGestureDirectionUsedFlag();
         initializeGestureEventQueue(x, y);
-        mGestureInitialX = mGestureBaseX = mGestureCurrentX = x;
-        mGestureInitialY = mGestureBaseY = mGestureCurrentY = y;
+        mGestureBaseX = x;
+        mGestureBaseY = y;
     }
 
     private boolean isGestureInsideOfKey(TextView softkey, float currentX, float currentY) {
@@ -418,6 +424,23 @@ final class Keyboard {
         }
     }
 
+    public void enlargeKeysIfNeeded() {
+        if ((mState == Utils.STATE_SYMBOL) ||
+                (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT)) {
+//            enlargeKeys(new int[26]);
+            resetKeyLayout();
+            return;
+        }
+        if (InputWordController.get().getLength() == 0 ||
+                InputWordController.get().getLastChar() == ' ') {
+            resetKeyLayout();
+            return;
+        }
+
+        String[] splitWord = InputWordController.get().getWord().split(" ");
+        enlargeKeys(mTrie.find(splitWord[splitWord.length - 1]));
+    }
+
     private void setKeyPressColor(TextView softkey) {
         softkey.setBackgroundResource(R.drawable.softkey_shape_press);
     }
@@ -470,7 +493,7 @@ final class Keyboard {
         }
         mLongPressTimerFlag = 0;
         mLongPressTimer = new Timer();
-        mLongPressTimerTask = new TimerTask() {
+        TimerTask mLongPressTimerTask = new TimerTask() {
             @Override
             public void run() {
                 if (mLongPressTimerFlag > 10) {

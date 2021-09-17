@@ -34,6 +34,16 @@ public class Utils {
         }
     }
 
+    static boolean isStringContainsAlphabetOnly(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (Utils.isCharacterOrNumber(str.charAt(i)) == CHARACTER_TYPE.NUMBER ||
+                    Utils.isCharacterOrNumber(str.charAt(i)) == CHARACTER_TYPE.SYMBOL) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static boolean isFunctionKey(String data) {
         if ("SHI".equals(data) || "SYM".equals(data) || "DEL".equals(data) ||
                 "SPA".equals(data) || "SET".equals(data) || "ENT".equals(data)) {
