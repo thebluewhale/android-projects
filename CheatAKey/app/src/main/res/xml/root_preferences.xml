@@ -16,6 +16,14 @@
             app:summary="Swipe 팝업 사용을 설정하니다."
             app:iconSpaceReserved="false" />
 
+        <ListPreference
+            app:key="settings_keyboard_type"
+            app:defaultValue="1"
+            app:entries="@array/keyboard_type_entries"
+            app:entryValues="@array/keyboard_type_entryValues"
+            app:title="키보드 종류 선택"
+            app:iconSpaceReserved="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

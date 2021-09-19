@@ -2,4 +2,15 @@
 
 <resources>
     <string name="app_name">CheatAKey</string>
+
+    <!-- JoKey Strings   -->
+    <string name="gesture_guide_jokey_0_0">q</string>
+    <string name="gesture_guide_jokey_0_1">e</string>
+    <string name="gesture_guide_jokey_0_2">i</string>
+    <string name="gesture_guide_jokey_1_0">a</string>
+    <string name="gesture_guide_jokey_1_1">●</string>
+    <string name="gesture_guide_jokey_1_2">o</string>
+    <string name="gesture_guide_jokey_2_0">z</string>
+    <string name="gesture_guide_jokey_2_1">u</string>
+    <string name="gesture_guide_jokey_2_2">y</string>
 </resources>

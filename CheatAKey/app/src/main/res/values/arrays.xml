@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="reply_entries">
-        <item>Reply</item>
-        <item>Reply to all</item>
-    </string-array>
-
-    <string-array name="reply_values">
-        <item>reply</item>
-        <item>reply_all</item>
-    </string-array>
-
     <string-array name="longpress_time">
         <item>0.5초</item>
         <item>0.7초</item>
         <item>1.0초</item>
-        <item>1.5초초</item>
+        <item>1.5초</item>
+    </string-array>
+
+    <string-array name="keyboard_type_entries">
+        <item>JoKey</item>
+        <item>PrinKey</item>
+        <item>JanKey</item>
+        <item>SunKey</item>
+    </string-array>
+
+    <string-array name="keyboard_type_entryValues">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
     </string-array>
 </resources>

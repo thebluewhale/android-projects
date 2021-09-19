@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gesture_guide"
+    style="@style/GestureGuide">
+
+    <TableRow>
+        <TextView
+            android:id="@+id/gesture_guide_jokey_0_0"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_0_0" />
+        <TextView
+            android:id="@+id/gesture_guide_jokey_0_1"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_0_1" />
+        <TextView
+            android:id="@+id/gesture_guide_jokey_0_2"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_0_2" />
+    </TableRow>
+
+    <TableRow>
+        <TextView
+            android:id="@+id/gesture_guide_jokey_1_0"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_1_0" />
+        <TextView
+            android:id="@+id/gesture_guide_jokey_1_1"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_1_1" />
+        <TextView
+            android:id="@+id/gesture_guide_jokey_1_2"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_1_2" />
+    </TableRow>
+
+    <TableRow>
+        <TextView
+            android:id="@+id/gesture_guide_jokey_2_0"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_2_0" />
+        <TextView
+            android:id="@+id/gesture_guide_jokey_2_1"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_2_1" />
+        <TextView
+            android:id="@+id/gesture_guide_jokey_2_2"
+            style="@style/GestureGuide.Cell"
+            android:text="@string/gesture_guide_jokey_2_2" />
+    </TableRow>
+
+</TableLayout>

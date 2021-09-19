@@ -6,8 +6,8 @@ android {
     compileSdk 30
 
     defaultConfig {
-        applicationId "com.prototype.cheatakey"
-        minSdk 28
+        applicationId "com.clab.cheatakey"
+        minSdk 29
         targetSdk 30
         versionCode 1
         versionName "1.0"
