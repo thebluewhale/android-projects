@@ -11,9 +11,8 @@ import java.util.HashMap;
 public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "cheatakey.db";
     public static final String TABLE_NAME = "settings_table";
-    private CustomVariables mCustomVariables = new CustomVariables();
-    public HashMap<String, Integer> mSettingsMap = new HashMap<>();
-    private ContentValues mContentValues;
+    private final CustomVariables mCustomVariables = new CustomVariables();
+    private final ContentValues mContentValues;
 
     public DataBaseHelper(@Nullable Context context) {
         super(context, DATABASE_NAME, null, 1);

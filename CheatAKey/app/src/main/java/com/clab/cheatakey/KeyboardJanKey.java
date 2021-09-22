@@ -26,7 +26,7 @@ final class KeyboardJanKey {
         GUIDE_A(0), GUIDE_E(1), GUIDE_I(2),
         GUIDE_O(3), GUIDE_U(4), GUIDE_NONE(5);
         private final int index;
-        private GESTURE_DIRECTION(int index) {
+        GESTURE_DIRECTION(int index) {
             this.index = index;
         }
         public int toInt() {

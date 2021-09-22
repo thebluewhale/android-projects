@@ -3,7 +3,6 @@ package com.clab.cheatakey;
 import android.content.Context;
 import android.inputmethodservice.InputMethodService;
 import android.os.Vibrator;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -11,9 +10,6 @@ import android.view.inputmethod.InputConnection;
 
 public class CheatAKeyService extends InputMethodService {
     private InputView mInputView = null;
-    private KeyboardJanKey mKeyboardJanKey = null;
-    private KeyboardJoKey mKeyboardJoKey = null;
-    private InputConnection mInputConnection;
     private DataBaseHelper mDatabaseHelper;
     private CustomVariables mCustomVariables;
     private int mCurrentKeyboardType;
@@ -42,6 +38,8 @@ public class CheatAKeyService extends InputMethodService {
     }
 
     private void createKeyboardLayout() {
+        KeyboardJanKey mKeyboardJanKey;
+        KeyboardJoKey mKeyboardJoKey;
         if (getCurrentKeyboardType() == mCustomVariables.SETTINGS_KEYBOARD_TYPE_JOKEY) {
             mCurrentKeyboardType = mCustomVariables.SETTINGS_KEYBOARD_TYPE_JOKEY;
             if (mDatabaseHelper.getBooleanSettingValue(mCustomVariables.SETTINGS_USE_NUMBER_ROW)) {
@@ -70,16 +68,17 @@ public class CheatAKeyService extends InputMethodService {
     }
 
     boolean checkDoubleSpaceToPeriod() {
+        InputConnection inputConnection = getInputConnection();
         if (!mDatabaseHelper.getBooleanSettingValue(mCustomVariables.SETTINGS_USE_AUTO_PERIOD)) {
             return false;
         }
-        CharSequence lastText = mInputConnection.getTextBeforeCursor(1, 0);
+        CharSequence lastText = inputConnection.getTextBeforeCursor(1, 0);
         char last = lastText.length() > 0 ? lastText.charAt(0) : 'x';
         if (last != ' ') {
             return false;
         }
-        mInputConnection.deleteSurroundingText(1, 0);
-        mInputConnection.commitText(".", 1);
+        inputConnection.deleteSurroundingText(1, 0);
+        inputConnection.commitText(".", 1);
         return true;
     }
 
