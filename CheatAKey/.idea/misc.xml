@@ -5,8 +5,13 @@
       <map>
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/gesture_guide_bubble.xml" value="0.1793478260869565" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/gesture_guide_jokey.xml" value="0.1793478260869565" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/gesture_guide_prinkey.xml" value="0.17300724637681159" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/gesture_guide_rect.xml" value="0.1793478260869565" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/gesture_guide_sunkey.xml" value="0.17300724637681159" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/input_view.xml" value="0.12335359675785208" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/keyboard_jokey_num.xml" value="0.17300724637681159" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/keyboard_prinkey.xml" value="0.17300724637681159" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/layout/keyboard_prinkey_num.xml" value="0.17300724637681159" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheatAKey/app/src/main/res/xml/root_preferences.xml" value="0.1793478260869565" />
       </map>
     </option>

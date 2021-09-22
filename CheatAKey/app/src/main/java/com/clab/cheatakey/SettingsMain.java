@@ -12,7 +12,6 @@ import java.util.HashMap;
 
 public class SettingsMain extends AppCompatActivity {
     private SharedPreferences mSharedPreferences;
-    private CustomVariables mCustomVariables;
     private DataBaseHelper mDataBaseHelper;
 
     @Override
@@ -31,7 +30,6 @@ public class SettingsMain extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        mCustomVariables = new CustomVariables();
         mDataBaseHelper = new DataBaseHelper(this);
     }
 
@@ -46,14 +44,14 @@ public class SettingsMain extends AppCompatActivity {
         super.onStop();
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         HashMap<String, Integer> booleanSettings = new HashMap<>();
-        for (String menu : mCustomVariables.BOOLEAN_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
             boolean value = mSharedPreferences.getBoolean(menu, false);
             booleanSettings.put(menu, value ? 1 : 0);
         }
         mDataBaseHelper.insertBoolean(booleanSettings);
 
         HashMap<String, Integer> intSettings = new HashMap<>();
-        for (String menu : mCustomVariables.INTEGER_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.INTEGER_SETTINGS_MENU_LIST) {
             String value = mSharedPreferences.getString(menu, "1");
             intSettings.put(menu, Integer.valueOf(value));
         }

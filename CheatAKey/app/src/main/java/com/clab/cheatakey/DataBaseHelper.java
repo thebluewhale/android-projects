@@ -11,7 +11,6 @@ import java.util.HashMap;
 public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "cheatakey.db";
     public static final String TABLE_NAME = "settings_table";
-    private final CustomVariables mCustomVariables = new CustomVariables();
     private final ContentValues mContentValues;
 
     public DataBaseHelper(@Nullable Context context) {
@@ -33,10 +32,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
 
         String query = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(";
-        for (String menu : mCustomVariables.BOOLEAN_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
             query = query + menu + " INTEGER DEFAULT 0,";
         }
-        for (String menu : mCustomVariables.INTEGER_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.INTEGER_SETTINGS_MENU_LIST) {
             query = query + menu + " INTEGER DEFAULT 1,";
         }
         query = query.substring(0, query.length() - 1) + ")";
@@ -44,14 +43,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     }
 
     public void insertBoolean(HashMap<String, Integer> map) {
-        for (String menu : mCustomVariables.BOOLEAN_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
             int value = map.get(menu);
             mContentValues.put(menu, value);
         }
     }
 
     public void insertInteger(HashMap<String, Integer> map) {
-        for (String menu : mCustomVariables.INTEGER_SETTINGS_MENU_LIST) {
+        for (String menu : Utils.INTEGER_SETTINGS_MENU_LIST) {
             int value = map.get(menu);
             mContentValues.put(menu, value);
         }

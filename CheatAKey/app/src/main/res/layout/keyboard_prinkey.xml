@@ -42,10 +42,10 @@
             android:id="@+id/key_pos_1_3"
             style="@style/SoftKey" />
         <TextView
-            android:id="@+id/key_pos_vowel"
+            android:id="@+id/key_pos_1_4"
             style="@style/SoftKey" />
         <TextView
-            android:id="@+id/key_pos_1_4"
+            android:id="@+id/key_pos_1_5"
             style="@style/SoftKey" />
         <TextView
             android:id="@+id/key_pos_question_mark"
@@ -69,7 +69,7 @@
             android:id="@+id/key_pos_2_4"
             style="@style/SoftKey" />
         <TextView
-            android:id="@+id/key_pos_2_5"
+            android:id="@+id/key_pos_vowel"
             style="@style/SoftKey" />
         <TextView
             android:id="@+id/key_pos_period_mark"

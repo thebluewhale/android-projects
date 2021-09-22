@@ -2,7 +2,6 @@ package com.clab.cheatakey;
 
 import android.annotation.SuppressLint;
 import android.os.VibrationEffect;
-import android.renderscript.ScriptGroup;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -12,7 +11,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Queue;
@@ -20,7 +18,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /** Controls the visible virtual keyboard view. */
-final class KeyboardJoKey {
+final class KeyboardPrinKey {
 
     private static final int STATE_NORMAL = 0;
     private static final int STATE_SHIFT = 1;
@@ -43,21 +41,22 @@ final class KeyboardJoKey {
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
+    private View mGestureGuideView;
     private LayoutInflater mLayoutInflater;
-    private final PopupWindow mGestureGuideViewContainer = new PopupWindow();
+    private PopupWindow mGestureGuideViewContainer = new PopupWindow();
     private DataBaseHelper mDataBaseHelper;
     private int mState;
-    private float mGestureBaseX, mGestureBaseY;
-    private final Queue<Float> mGestureXQueue = new LinkedList<>();
-    private final Queue<Float> mGestureYQueue = new LinkedList<>();
-    private final int[] mGestureDirectionUsedFlag = new int[8];
+    private float mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
+    private Queue<Float> mGestureXQueue = new LinkedList<>();
+    private Queue<Float> mGestureYQueue = new LinkedList<>();
+    private int[] mGestureDirectionUsedFlag = new int[8];
     private Timer mTimer;
     private TimerTask mTouchDownTimerTask, mContinueInputTimerTask;
     private String mCurrentClickedKey;
-    private final String[] mDirectionCharacterMap = new String[8];
+    private String[] mDirectionCharacterMap = new String[8];
 
 
-    private KeyboardJoKey(CheatAKeyService cheatAKeyService, int viewResId,
+    private KeyboardPrinKey(CheatAKeyService cheatAKeyService, int viewResId,
                      SparseArray<String> keyMapping) {
         this.mCheatAKeyService = cheatAKeyService;
         this.mViewResId = viewResId;
@@ -96,37 +95,37 @@ final class KeyboardJoKey {
         }
     }
 
-    static KeyboardJoKey jokey(CheatAKeyService cheatAKeyService) {
+    static KeyboardPrinKey prinkey(CheatAKeyService cheatAKeyService) {
         SparseArray<String> keyMapping = new SparseArray<>();
         keyMapping.put(R.id.key_pos_wave_mark, "~");
-        keyMapping.put(R.id.key_pos_0_1, "wW+`");
-        keyMapping.put(R.id.key_pos_0_2, "rR×\\");
-        keyMapping.put(R.id.key_pos_0_3, "tT÷|");
-        keyMapping.put(R.id.key_pos_0_4, "pP=○");
-        keyMapping.put(R.id.key_pos_0_5, "lL/●");
+        keyMapping.put(R.id.key_pos_0_1, "bB+`");
+        keyMapping.put(R.id.key_pos_0_2, "cC×\\");
+        keyMapping.put(R.id.key_pos_0_3, "dD÷|");
+        keyMapping.put(R.id.key_pos_0_4, "fF=○");
+        keyMapping.put(R.id.key_pos_0_5, "gG/●");
         keyMapping.put(R.id.key_pos_exclamation_mark, "!");
 
         keyMapping.put(R.id.key_pos_caret_mark, "^");
-        keyMapping.put(R.id.key_pos_1_1, "sS<□");
-        keyMapping.put(R.id.key_pos_1_2, "dD>■");
-        keyMapping.put(R.id.key_pos_1_3, "fF_/");
-        keyMapping.put(R.id.key_pos_vowel, "VOWEL");
-        keyMapping.put(R.id.key_pos_1_4, "kK-◇");
+        keyMapping.put(R.id.key_pos_1_1, "hH<□");
+        keyMapping.put(R.id.key_pos_1_2, "jJ>■");
+        keyMapping.put(R.id.key_pos_1_3, "kK_/");
+        keyMapping.put(R.id.key_pos_1_4, "lL-◇");
+        keyMapping.put(R.id.key_pos_1_5, "mM-◇");
         keyMapping.put(R.id.key_pos_question_mark, "?");
 
         keyMapping.put(R.id.key_pos_semicolon_mark, ";");
-        keyMapping.put(R.id.key_pos_2_1, "xX(≪");
-        keyMapping.put(R.id.key_pos_2_2, "cC)≫");
-        keyMapping.put(R.id.key_pos_2_3, "gG[℃");
-        keyMapping.put(R.id.key_pos_2_4, "hH]℉");
-        keyMapping.put(R.id.key_pos_2_5, "jJ♡∞");
+        keyMapping.put(R.id.key_pos_2_1, "nN(≪");
+        keyMapping.put(R.id.key_pos_2_2, "pP)≫");
+        keyMapping.put(R.id.key_pos_2_3, "rR[℃");
+        keyMapping.put(R.id.key_pos_2_4, "sS]℉");
+        keyMapping.put(R.id.key_pos_vowel, "VOWEL");
         keyMapping.put(R.id.key_pos_period_mark, ".");
 
         keyMapping.put(R.id.key_pos_asterisk_mark, "*");
-        keyMapping.put(R.id.key_pos_3_1, "vV#¡");
-        keyMapping.put(R.id.key_pos_3_2, "bB%¿");
-        keyMapping.put(R.id.key_pos_3_3, "nN&$");
-        keyMapping.put(R.id.key_pos_3_4, "mM@₤");
+        keyMapping.put(R.id.key_pos_3_1, "tT#¡");
+        keyMapping.put(R.id.key_pos_3_2, "vV%¿");
+        keyMapping.put(R.id.key_pos_3_3, "wW&$");
+        keyMapping.put(R.id.key_pos_3_4, "yY@₤");
         keyMapping.put(R.id.key_pos_del, "DEL");
 
         keyMapping.put(R.id.key_pos_symbol, "SYM");
@@ -135,40 +134,40 @@ final class KeyboardJoKey {
         keyMapping.put(R.id.key_pos_space, "SPA");
         keyMapping.put(R.id.key_pos_enter, "ENT");
 
-        return new KeyboardJoKey(cheatAKeyService, R.layout.keyboard_jokey, keyMapping);
+        return new KeyboardPrinKey(cheatAKeyService, R.layout.keyboard_prinkey, keyMapping);
     }
 
-    static KeyboardJoKey jokey_num(CheatAKeyService cheatAKeyService) {
+    static KeyboardPrinKey prinkey_num(CheatAKeyService cheatAKeyService) {
         SparseArray<String> keyMapping = new SparseArray<>();
         keyMapping.put(R.id.key_pos_wave_mark, "~");
-        keyMapping.put(R.id.key_pos_0_1, "wW+`");
-        keyMapping.put(R.id.key_pos_0_2, "rR×\\");
-        keyMapping.put(R.id.key_pos_0_3, "tT÷|");
-        keyMapping.put(R.id.key_pos_0_4, "pP=○");
-        keyMapping.put(R.id.key_pos_0_5, "lL/●");
+        keyMapping.put(R.id.key_pos_0_1, "bB+`");
+        keyMapping.put(R.id.key_pos_0_2, "cC×\\");
+        keyMapping.put(R.id.key_pos_0_3, "dD÷|");
+        keyMapping.put(R.id.key_pos_0_4, "fF=○");
+        keyMapping.put(R.id.key_pos_0_5, "gG/●");
         keyMapping.put(R.id.key_pos_exclamation_mark, "!");
 
         keyMapping.put(R.id.key_pos_caret_mark, "^");
-        keyMapping.put(R.id.key_pos_1_1, "sS<□");
-        keyMapping.put(R.id.key_pos_1_2, "dD>■");
-        keyMapping.put(R.id.key_pos_1_3, "fF_/");
-        keyMapping.put(R.id.key_pos_vowel, "VOWEL");
-        keyMapping.put(R.id.key_pos_1_4, "kK-◇");
+        keyMapping.put(R.id.key_pos_1_1, "hH<□");
+        keyMapping.put(R.id.key_pos_1_2, "jJ>■");
+        keyMapping.put(R.id.key_pos_1_3, "kK_/");
+        keyMapping.put(R.id.key_pos_1_4, "lL-◇");
+        keyMapping.put(R.id.key_pos_1_5, "mM-◇");
         keyMapping.put(R.id.key_pos_question_mark, "?");
 
         keyMapping.put(R.id.key_pos_semicolon_mark, ";");
-        keyMapping.put(R.id.key_pos_2_1, "xX(≪");
-        keyMapping.put(R.id.key_pos_2_2, "cC)≫");
-        keyMapping.put(R.id.key_pos_2_3, "gG[℃");
-        keyMapping.put(R.id.key_pos_2_4, "hH]℉");
-        keyMapping.put(R.id.key_pos_2_5, "jJ♡∞");
+        keyMapping.put(R.id.key_pos_2_1, "nN(≪");
+        keyMapping.put(R.id.key_pos_2_2, "pP)≫");
+        keyMapping.put(R.id.key_pos_2_3, "rR[℃");
+        keyMapping.put(R.id.key_pos_2_4, "sS]℉");
+        keyMapping.put(R.id.key_pos_vowel, "VOWEL");
         keyMapping.put(R.id.key_pos_period_mark, ".");
 
         keyMapping.put(R.id.key_pos_asterisk_mark, "*");
-        keyMapping.put(R.id.key_pos_3_1, "vV#¡");
-        keyMapping.put(R.id.key_pos_3_2, "bB%¿");
-        keyMapping.put(R.id.key_pos_3_3, "nN&$");
-        keyMapping.put(R.id.key_pos_3_4, "mM@₤");
+        keyMapping.put(R.id.key_pos_3_1, "tT#¡");
+        keyMapping.put(R.id.key_pos_3_2, "vV%¿");
+        keyMapping.put(R.id.key_pos_3_3, "wW&$");
+        keyMapping.put(R.id.key_pos_3_4, "yY@₤");
         keyMapping.put(R.id.key_pos_del, "DEL");
 
         keyMapping.put(R.id.key_pos_symbol, "SYM");
@@ -188,7 +187,7 @@ final class KeyboardJoKey {
         keyMapping.put(R.id.key_pos_num_8, "8");
         keyMapping.put(R.id.key_pos_num_9, "9");
 
-        return new KeyboardJoKey(cheatAKeyService, R.layout.keyboard_jokey_num, keyMapping);
+        return new KeyboardPrinKey(cheatAKeyService, R.layout.keyboard_prinkey_num, keyMapping);
     }
 
     View inflateKeyboardView(LayoutInflater inflater, InputView inputView) {
@@ -199,6 +198,7 @@ final class KeyboardJoKey {
     }
 
     private boolean onSoftkeyTouch(View view, MotionEvent evt, TextView softkey, int index, String data) {
+        System.out.println("MYLOG | onSoftKeyTouch");
         int []outLocation = new int[2];
         view.getLocationInWindow(outLocation);
         int action = evt.getActionMasked();
@@ -211,8 +211,8 @@ final class KeyboardJoKey {
                 float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
                 float locationY = outLocation[1] - gestureGuideViewWidth;
                 showGestureGuideIfNeeded(view, locationX, locationY, data);
-                mGestureBaseX = evt.getX();
-                mGestureBaseY = evt.getY();
+                mGestureBaseX = mGestureCurrentX = evt.getX();
+                mGestureBaseY = mGestureCurrentY = evt.getY();
                 initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
                 initializeGestureDirectionUsedFlag();
                 touchTimerHandler(true);
@@ -223,9 +223,6 @@ final class KeyboardJoKey {
                 touchTimerHandler(false);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (shouldSkipGestureInput()) {
-                    return true;
-                }
                 touchTimerHandler(false);
                 float mGestureCurrentX = evt.getX();
                 float mGestureCurrentY = evt.getY();
@@ -295,6 +292,7 @@ final class KeyboardJoKey {
 
     @SuppressLint("ClickableViewAccessibility")
     private void mapKeys() {
+        System.out.println("MYLOG | mapKeys");
         for (int i = 0; i < mKeyMapping.size(); i++) {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
             if (softkey != null) {
@@ -322,14 +320,14 @@ final class KeyboardJoKey {
                 "!".equals(data) || "^".equals(data) || "?".equals(data) ||
                 ";".equals(data) || ".".equals(data) ||
                 "*".equals(data) || ",".equals(data))) {
-            View mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide_jokey, null);
+            mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide_prinkey, null);
             if (mGestureGuideView.getParent() != null) {
                 ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
             }
             mGestureGuideViewContainer.setContentView(mGestureGuideView);
             mGestureGuideViewContainer.setWidth(dpToPx(101));
             mGestureGuideViewContainer.setHeight(dpToPx(101));
-            mGestureGuideViewContainer.showAtLocation(view, 0, (int)x, (int)y);
+            mGestureGuideViewContainer.showAtLocation(view, 0, Math.round(x), Math.round(y));
         }
     }
 
@@ -338,38 +336,34 @@ final class KeyboardJoKey {
     }
 
     private void handleTouchDown(String data) {
+        System.out.println("MYLOG | handleTouchDown");
         if (mDataBaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_VIBRATION_FEEDBACK)) {
             mCheatAKeyService.getVibratorService().vibrate(
                     VibrationEffect.createOneShot(15, VibrationEffect.DEFAULT_AMPLITUDE));
         }
-        data = getTextFromFuncKey(data);
-        if (data.length() == 0) {
+        if ("SHI".equals(data)) {
+            mState = mState ^ STATE_SHIFT;
+            mapKeys();
+            return;
+        } else if ("SYM".equals(data)) {
+            mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
+            mapKeys();
             return;
         }
+        data = getTextFromFuncKey(data);
+        if (data.isEmpty()) return;
 
         InputConnection inputConnection = mCheatAKeyService.getInputConnection();
-        switch (data) {
-            case "SHI":
-                mState = mState ^ STATE_SHIFT;
-                mapKeys();
-                break;
-            case "SYM":
-                mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
-                mapKeys();
-                break;
-            case "DEL":
-                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                break;
-            case "ENT":
-                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
-                break;
-            case "SPA":
-                if (!checkDoubleSpaceToPeriod()) {
-                    inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
-                }
-                break;
-            default:
-                inputConnection.commitText(data, 1);
+        if ("DEL".equals(data)) {
+            inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
+        } else if ("ENT".equals(data)) {
+            inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
+        } else if ("SPA".equals(data)) {
+            if (!checkDoubleSpaceToPeriod()) {
+                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
+            }
+        } else {
+            inputConnection.commitText(data, 1);
         }
     }
 
@@ -396,7 +390,7 @@ final class KeyboardJoKey {
             return data;
         }
     }
-    
+
     private int dpToPx(float dp) {
         float density = mCheatAKeyService.getResources().getDisplayMetrics().density;
         return (int) Math.round(dp * density + 0.5);
@@ -478,22 +472,18 @@ final class KeyboardJoKey {
     }
 
     private void initializeDirectionCharacterMap() {
-        mDirectionCharacterMap[GESTURE_DIRECTION.UP.toInt()] = "e";
-        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHTUP.toInt()] = "i";
-        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHT.toInt()] = "o";
-        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHTDOWN.toInt()] = "y";
-        mDirectionCharacterMap[GESTURE_DIRECTION.DOWN.toInt()] = "u";
-        mDirectionCharacterMap[GESTURE_DIRECTION.LEFTDOWN.toInt()] = "z";
+        mDirectionCharacterMap[GESTURE_DIRECTION.UP.toInt()] = "o";
+        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHTUP.toInt()] = "x";
+        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHT.toInt()] = "u";
+        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHTDOWN.toInt()] = "q";
+        mDirectionCharacterMap[GESTURE_DIRECTION.DOWN.toInt()] = "i";
+        mDirectionCharacterMap[GESTURE_DIRECTION.LEFTDOWN.toInt()] = "e";
         mDirectionCharacterMap[GESTURE_DIRECTION.LEFT.toInt()] = "a";
-        mDirectionCharacterMap[GESTURE_DIRECTION.LEFTUP.toInt()] = "q";
+        mDirectionCharacterMap[GESTURE_DIRECTION.LEFTUP.toInt()] = "z";
     }
 
     private String getDirectionCharacter(GESTURE_DIRECTION direction) {
         return mDirectionCharacterMap[direction.toInt()];
-    }
-
-    private boolean shouldSkipGestureInput() {
-        return !mGestureGuideViewContainer.isShowing();
     }
 
     boolean checkDoubleSpaceToPeriod() {

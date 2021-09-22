@@ -12,10 +12,16 @@ import android.view.inputmethod.InputConnection;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.clab.cheatakey.CheatAKeyService;
+
+import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Queue;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /** Controls the visible virtual keyboard view. */
-final class KeyboardJanKey {
+final class KeyboardSunKey {
 
     private static final int STATE_NORMAL = 0;
     private static final int STATE_SHIFT = 1;
@@ -23,10 +29,10 @@ final class KeyboardJanKey {
     private static final int NUM_STATES = 4;
 
     private enum GESTURE_DIRECTION {
-        GUIDE_A(0), GUIDE_E(1), GUIDE_I(2),
-        GUIDE_O(3), GUIDE_U(4), GUIDE_NONE(5);
+        UP(0), RIGHTUP(1), RIGHT(2), RIGHTDOWN(3),
+        DOWN(4), LEFTDOWN(5), LEFT(6), LEFTUP(7);
         private final int index;
-        GESTURE_DIRECTION(int index) {
+        private GESTURE_DIRECTION(int index) {
             this.index = index;
         }
         public int toInt() {
@@ -38,19 +44,22 @@ final class KeyboardJanKey {
     private final int mViewResId;
     private final SparseArray<String> mKeyMapping;
     private View mKeyboardView;
+    private View mGestureGuideView;
     private LayoutInflater mLayoutInflater;
+    private PopupWindow mGestureGuideViewContainer = new PopupWindow();
     private DataBaseHelper mDataBaseHelper;
     private int mState;
-    private final int[] mGestureDirectionUsedFlag = new int[6];
-    private final String[] mDirectionCharacterMap = new String[6];
-    private boolean mGestureGuideViewIsShown;
-    private final PopupWindow mGestureGuideViewAContainer = new PopupWindow();
-    private final PopupWindow mGestureGuideViewEContainer = new PopupWindow();
-    private final PopupWindow mGestureGuideViewIContainer = new PopupWindow();
-    private final PopupWindow mGestureGuideViewOContainer = new PopupWindow();
-    private final PopupWindow mGestureGuideViewUContainer = new PopupWindow();
+    private float mGestureCurrentX, mGestureCurrentY, mGestureBaseX, mGestureBaseY;
+    private Queue<Float> mGestureXQueue = new LinkedList<>();
+    private Queue<Float> mGestureYQueue = new LinkedList<>();
+    private int[] mGestureDirectionUsedFlag = new int[8];
+    private Timer mTimer;
+    private TimerTask mTouchDownTimerTask, mContinueInputTimerTask;
+    private String mCurrentClickedKey;
+    private String[] mDirectionCharacterMap = new String[8];
 
-    private KeyboardJanKey(CheatAKeyService cheatAKeyService, int viewResId,
+
+    private KeyboardSunKey(CheatAKeyService cheatAKeyService, int viewResId,
                      SparseArray<String> keyMapping) {
         this.mCheatAKeyService = cheatAKeyService;
         this.mViewResId = viewResId;
@@ -60,6 +69,7 @@ final class KeyboardJanKey {
         initializeDataBaseHelper();
         initializeGestureDirectionUsedFlag();
         initializeDirectionCharacterMap();
+//        createKeyIdArray();
     }
 
     private String getLabel(String data) {
@@ -89,7 +99,7 @@ final class KeyboardJanKey {
         }
     }
 
-    static KeyboardJanKey jankey(CheatAKeyService cheatAKeyService) {
+    static KeyboardSunKey sunkey(CheatAKeyService cheatAKeyService) {
         SparseArray<String> keyMapping = new SparseArray<>();
         keyMapping.put(R.id.key_pos_wave_mark, "~");
         keyMapping.put(R.id.key_pos_0_1, "wW+`");
@@ -129,10 +139,10 @@ final class KeyboardJanKey {
         keyMapping.put(R.id.key_pos_space, "SPA");
         keyMapping.put(R.id.key_pos_enter, "ENT");
 
-        return new KeyboardJanKey(cheatAKeyService, R.layout.keyboard_jankey, keyMapping);
+        return new KeyboardSunKey(cheatAKeyService, R.layout.keyboard_sunkey, keyMapping);
     }
 
-    static KeyboardJanKey jankey_num(CheatAKeyService cheatAKeyService) {
+    static KeyboardSunKey sunkey_num(CheatAKeyService cheatAKeyService) {
         SparseArray<String> keyMapping = new SparseArray<>();
         keyMapping.put(R.id.key_pos_wave_mark, "~");
         keyMapping.put(R.id.key_pos_0_1, "wW+`");
@@ -183,7 +193,7 @@ final class KeyboardJanKey {
         keyMapping.put(R.id.key_pos_num_8, "8");
         keyMapping.put(R.id.key_pos_num_9, "9");
 
-        return new KeyboardJanKey(cheatAKeyService, R.layout.keyboard_jankey_num, keyMapping);
+        return new KeyboardSunKey(cheatAKeyService, R.layout.keyboard_sunkey_num, keyMapping);
     }
 
     View inflateKeyboardView(LayoutInflater inflater, InputView inputView) {
@@ -200,28 +210,87 @@ final class KeyboardJanKey {
 
         switch (action) {
             case MotionEvent.ACTION_DOWN:
-                showGestureGuideIfNeeded(view, data);
-                softkey.setBackgroundResource(R.drawable.softkey_shape_press);
+                mCurrentClickedKey = data;
+                float softkeyWidth = softkey.getWidth();
+                float gestureGuideViewWidth = dpToPx(101);
+                float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
+                float locationY = outLocation[1] - gestureGuideViewWidth;
+                showGestureGuideIfNeeded(view, locationX, locationY, data);
+                mGestureBaseX = mGestureCurrentX = evt.getX();
+                mGestureBaseY = mGestureCurrentY = evt.getY();
+                initializeGestureEventQueue(mGestureBaseX, mGestureBaseY);
+                initializeGestureDirectionUsedFlag();
+                touchTimerHandler(true);
                 handleTouchDown(data);
                 break;
             case MotionEvent.ACTION_UP:
                 hideGestureGuide();
-                softkey.setBackgroundResource(R.drawable.softkey_shape_normal);
+                touchTimerHandler(false);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (!mGestureGuideViewIsShown) {
-                    return true;
-                }
-                GESTURE_DIRECTION loc = getGestureLocation(softkey, evt.getX(), evt.getY());
-                if (getGestureDirectionUsedFlag(loc)) {
-                    // skip
-                } else {
-                    updateGestureDirectionUsedFlag(loc, 1);
-                    String gestureInput = getDirectionCharacter(loc);
-                    handleTouchDown(mState == STATE_SHIFT ? gestureInput.toUpperCase(Locale.ROOT) : gestureInput);
+                touchTimerHandler(false);
+                float mGestureCurrentX = evt.getX();
+                float mGestureCurrentY = evt.getY();
+                addGestureEventIntoQueue(mGestureCurrentX, mGestureCurrentY);
+
+                float distX = mGestureCurrentX - mGestureBaseX;
+                float distY = mGestureCurrentY - mGestureBaseY;
+                float angle = (float) Math.toDegrees(Math.atan2(distY, distX));
+
+                if (Math.abs(distX) < dpToPx(30) && Math.abs(distY) < dpToPx(30)) return false;
+
+                if (angle < -67.5 && angle > -112.5) {
+                    // Up
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.UP)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.UP));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.UP, 1);
+                    }
+                } else if (angle >= -67.5 && angle <= -22.5) {
+                    // RightUp
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.RIGHTUP));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTUP, 1);
+                    }
+                } else if (angle > -22.5 && angle < 22.5) {
+                    // Right
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.RIGHT));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHT, 1);
+                    }
+                } else if (angle >= 22.5 && angle <= 67.5) {
+                    // RightDown
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.RIGHTDOWN));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.RIGHTDOWN, 1);
+                    }
+                } else if (angle > 67.5 && angle < 112.5) {
+                    // Down
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.DOWN));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.DOWN, 1);
+                    }
+                } else if (angle >= 112.5 && angle < 157.5) {
+                    // LeftDown
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.LEFTDOWN));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTDOWN, 1);
+                    }
+                } else if (angle >= 157.5 && angle <= 180 || angle <= -157.5 && angle >= -180) {
+                    // Left
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.LEFT));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFT, 1);
+                    }
+                } else if (angle >= -157.5 && angle <= -112.5) {
+                    //  LeftUp
+                    if (!getGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP)) {
+                        handleGestureInput(getDirectionCharacter(GESTURE_DIRECTION.LEFTUP));
+                        updateGestureDirectionUsedFlag(GESTURE_DIRECTION.LEFTUP, 1);
+                    }
                 }
                 break;
             default:
+                // do nothing
         }
         return true;
     }
@@ -240,8 +309,7 @@ final class KeyboardJanKey {
         }
     }
 
-    private void showGestureGuideIfNeeded(View view, String data) {
-        mGestureGuideViewIsShown = false;
+    private void showGestureGuideIfNeeded(View view, float x, float y, String data) {
         if (!mDataBaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
             return;
         }
@@ -256,91 +324,19 @@ final class KeyboardJanKey {
                 "!".equals(data) || "^".equals(data) || "?".equals(data) ||
                 ";".equals(data) || ".".equals(data) ||
                 "*".equals(data) || ",".equals(data))) {
-            mGestureGuideViewIsShown = true;
-
-            TextView softkey = (TextView) view;
-            int []softkeyLocation = new int[2];
-            softkey.getLocationInWindow(softkeyLocation);
-            int[] newLocation = new int[2];
-
-            // A
-            getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                    dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -30, newLocation);
-            View mGestureGuideViewA = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewA).setText(mState == STATE_SHIFT ? "A" : "a");
-
-            if (mGestureGuideViewA.getParent() != null) {
-                ((ViewGroup) mGestureGuideViewA.getParent()).removeView(mGestureGuideViewA);
+            mGestureGuideView = mLayoutInflater.inflate(R.layout.gesture_guide_sunkey, null);
+            if (mGestureGuideView.getParent() != null) {
+                ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
             }
-            mGestureGuideViewAContainer.setContentView(mGestureGuideViewA);
-            mGestureGuideViewAContainer.setWidth(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewAContainer.setHeight(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewAContainer.showAtLocation(view, 0, newLocation[0], newLocation[1]);
-
-            // E
-            getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                    dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -80, newLocation);
-            View mGestureGuideViewE = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewE).setText(mState == STATE_SHIFT ? "E" : "e");
-
-            if (mGestureGuideViewE.getParent() != null) {
-                ((ViewGroup) mGestureGuideViewE.getParent()).removeView(mGestureGuideViewE);
-            }
-            mGestureGuideViewEContainer.setContentView(mGestureGuideViewE);
-            mGestureGuideViewEContainer.setWidth(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewEContainer.setHeight(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewEContainer.showAtLocation(view, 0, newLocation[0], newLocation[1]);
-
-            // I
-            getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                    dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -130, newLocation);
-            View mGestureGuideViewI = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewI).setText(mState == STATE_SHIFT ? "I" : "i");
-
-            if (mGestureGuideViewI.getParent() != null) {
-                ((ViewGroup) mGestureGuideViewI.getParent()).removeView(mGestureGuideViewI);
-            }
-            mGestureGuideViewIContainer.setContentView(mGestureGuideViewI);
-            mGestureGuideViewIContainer.setWidth(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewIContainer.setHeight(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewIContainer.showAtLocation(view, 0, newLocation[0], newLocation[1]);
-
-            // O
-            getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                    dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -180, newLocation);
-            View mGestureGuideViewO = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewO).setText(mState == STATE_SHIFT ? "O" : "o");
-
-            if (mGestureGuideViewO.getParent() != null) {
-                ((ViewGroup) mGestureGuideViewO.getParent()).removeView(mGestureGuideViewO);
-            }
-            mGestureGuideViewOContainer.setContentView(mGestureGuideViewO);
-            mGestureGuideViewOContainer.setWidth(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewOContainer.setHeight(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewOContainer.showAtLocation(view, 0, newLocation[0], newLocation[1]);
-
-            // U
-            getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                    dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -230, newLocation);
-            View mGestureGuideViewU = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewU).setText(mState == STATE_SHIFT ? "U" : "u");
-
-            if (mGestureGuideViewU.getParent() != null) {
-                ((ViewGroup) mGestureGuideViewU.getParent()).removeView(mGestureGuideViewU);
-            }
-            mGestureGuideViewUContainer.setContentView(mGestureGuideViewU);
-            mGestureGuideViewUContainer.setWidth(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewUContainer.setHeight(dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE));
-            mGestureGuideViewUContainer.showAtLocation(view, 0, newLocation[0], newLocation[1]);
+            mGestureGuideViewContainer.setContentView(mGestureGuideView);
+            mGestureGuideViewContainer.setWidth(dpToPx(101));
+            mGestureGuideViewContainer.setHeight(dpToPx(101));
+            mGestureGuideViewContainer.showAtLocation(view, 0, (int)x, (int)y);
         }
     }
 
     private void hideGestureGuide() {
-        mGestureGuideViewAContainer.dismiss();
-        mGestureGuideViewEContainer.dismiss();
-        mGestureGuideViewIContainer.dismiss();
-        mGestureGuideViewOContainer.dismiss();
-        mGestureGuideViewUContainer.dismiss();
+        mGestureGuideViewContainer.dismiss();
     }
 
     private void handleTouchDown(String data) {
@@ -374,6 +370,13 @@ final class KeyboardJanKey {
         }
     }
 
+    private void handleGestureInput(String data) {
+        if ((mState == STATE_SYMBOL) || (mState == STATE_SYMBOL + STATE_SHIFT)) {
+            return;
+        }
+        handleTouchDown(mState == STATE_SHIFT ? data.toUpperCase(Locale.ROOT) : data);
+    }
+
     void reset() {
         mapKeys();
         mState = 0;
@@ -396,6 +399,28 @@ final class KeyboardJanKey {
         return (int) Math.round(dp * density + 0.5);
     }
 
+    private void initializeGestureEventQueue(float initX, float initY) {
+        mGestureXQueue.clear();
+        mGestureYQueue.clear();
+        mGestureXQueue.add(initX);
+        mGestureYQueue.add(initY);
+    }
+
+    private void addGestureEventIntoQueue(float x, float y) {
+        if (mGestureXQueue.size() < 10) {
+            mGestureXQueue.add(x);
+        } else {
+            mGestureBaseX = mGestureXQueue.poll();
+            mGestureXQueue.add(x);
+        }
+        if (mGestureYQueue.size() < 10) {
+            mGestureYQueue.add(y);
+        } else {
+            mGestureBaseY = mGestureYQueue.poll();
+            mGestureYQueue.add(y);
+        }
+    }
+
     private void initializeGestureDirectionUsedFlag() {
         for (GESTURE_DIRECTION direction : GESTURE_DIRECTION.values()) {
             mGestureDirectionUsedFlag[direction.toInt()] = 0;
@@ -411,73 +436,57 @@ final class KeyboardJanKey {
         return mGestureDirectionUsedFlag[direction.toInt()] == 1;
     }
 
+    static int counter;
+    private void touchTimerHandler(boolean down) {
+        if (down) {
+            counter = 0;
+            mTimer = new Timer();
+            if (mTouchDownTimerTask != null) {
+                mTouchDownTimerTask.cancel();
+                mTouchDownTimerTask = null;
+            }
+            mTouchDownTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    if (mContinueInputTimerTask != null) {
+                        mContinueInputTimerTask.cancel();
+                        mContinueInputTimerTask = null;
+                    }
+                    mContinueInputTimerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            continueInputHandler();
+                        }
+                    };
+                    mTimer.schedule(mContinueInputTimerTask, 250, 250);
+                }
+            };
+            mTimer.schedule(mTouchDownTimerTask, 1000, Long.MAX_VALUE);
+        } else {
+            if (mTimer != null) mTimer.cancel();
+        }
+    }
+
+    private void continueInputHandler() {
+        if (mCurrentClickedKey.equals("SHI") || mCurrentClickedKey.equals("SYM") || mCurrentClickedKey.equals("ENT")) {
+            return;
+        }
+        handleTouchDown(getTextFromFuncKey(mCurrentClickedKey));
+    }
+
     private void initializeDirectionCharacterMap() {
-        mDirectionCharacterMap[GESTURE_DIRECTION.GUIDE_A.toInt()] = "a";
-        mDirectionCharacterMap[GESTURE_DIRECTION.GUIDE_E.toInt()] = "e";
-        mDirectionCharacterMap[GESTURE_DIRECTION.GUIDE_I.toInt()] = "i";
-        mDirectionCharacterMap[GESTURE_DIRECTION.GUIDE_O.toInt()] = "o";
-        mDirectionCharacterMap[GESTURE_DIRECTION.GUIDE_U.toInt()] = "u";
-        mDirectionCharacterMap[GESTURE_DIRECTION.GUIDE_NONE.toInt()] = "";
+        mDirectionCharacterMap[GESTURE_DIRECTION.UP.toInt()] = "u";
+        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHTUP.toInt()] = "a";
+        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHT.toInt()] = "e";
+        mDirectionCharacterMap[GESTURE_DIRECTION.RIGHTDOWN.toInt()] = "i";
+        mDirectionCharacterMap[GESTURE_DIRECTION.DOWN.toInt()] = "o";
+        mDirectionCharacterMap[GESTURE_DIRECTION.LEFTDOWN.toInt()] = "";
+        mDirectionCharacterMap[GESTURE_DIRECTION.LEFT.toInt()] = "";
+        mDirectionCharacterMap[GESTURE_DIRECTION.LEFTUP.toInt()] = "";
     }
 
     private String getDirectionCharacter(GESTURE_DIRECTION direction) {
         return mDirectionCharacterMap[direction.toInt()];
-    }
-
-    private GESTURE_DIRECTION getGestureLocation(TextView softkey, float touchX, float touchY) {
-        int[] softkeyLocation = new int[2];
-        int[] guideViewALocation = new int[2];
-        int[] guideViewELocation = new int[2];
-        int[] guideViewILocation = new int[2];
-        int[] guideViewOLocation = new int[2];
-        int[] guideViewULocation = new int[2];
-        softkey.getLocationInWindow(softkeyLocation);
-        // convert coord to window coord
-        touchX = softkeyLocation[0] + touchX;
-        touchY = softkeyLocation[1] + touchY;
-
-        getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -15, guideViewALocation);
-        getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -65, guideViewELocation);
-        getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -115, guideViewILocation);
-        getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -165, guideViewOLocation);
-        getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
-                dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -215, guideViewULocation);
-
-        if (touchX >= guideViewALocation[0] && touchY >= guideViewALocation[1] &&
-                touchX <= guideViewALocation[0] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE) &&
-                touchY <= guideViewALocation[1] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE)) {
-            return GESTURE_DIRECTION.GUIDE_A;
-        } else if (touchX >= guideViewELocation[0] && touchY >= guideViewELocation[1] &&
-                touchX <= guideViewELocation[0] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE) &&
-                touchY <= guideViewELocation[1] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE)) {
-            return GESTURE_DIRECTION.GUIDE_E;
-        } else if (touchX >= guideViewILocation[0] && touchY >= guideViewILocation[1] &&
-                touchX <= guideViewILocation[0] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE) &&
-                touchY <= guideViewILocation[1] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE)) {
-            return GESTURE_DIRECTION.GUIDE_I;
-        } else if (touchX >= guideViewOLocation[0] && touchY >= guideViewOLocation[1] &&
-                touchX <= guideViewOLocation[0] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE) &&
-                touchY <= guideViewOLocation[1] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE)) {
-            return GESTURE_DIRECTION.GUIDE_O;
-        } else if (touchX >= guideViewULocation[0] && touchY >= guideViewULocation[1] &&
-                touchX <= guideViewULocation[0] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE) &&
-                touchY <= guideViewULocation[1] + dpToPx(Utils.GESTURE_GUIDE_VIEW_SIZE)) {
-            return GESTURE_DIRECTION.GUIDE_U;
-        }
-        return GESTURE_DIRECTION.GUIDE_NONE;
-    }
-
-    private void getPointFromAngle(int baseX, int baseY, int r, int angle, int[] ret) {
-        ret[0] = baseX + (int) Math.round(r * Math.cos(degreeToRadian(angle)));
-        ret[1] = baseY + (int) Math.round(r * Math.sin(degreeToRadian(angle)));
-    }
-
-    private double degreeToRadian(int degree) {
-        return (Math.PI/180)*degree;
     }
 
     boolean checkDoubleSpaceToPeriod() {

@@ -2,6 +2,7 @@ package com.clab.cheatakey;
 
 import android.content.Context;
 import android.inputmethodservice.InputMethodService;
+import android.inputmethodservice.Keyboard;
 import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,13 +12,11 @@ import android.view.inputmethod.InputConnection;
 public class CheatAKeyService extends InputMethodService {
     private InputView mInputView = null;
     private DataBaseHelper mDatabaseHelper;
-    private CustomVariables mCustomVariables;
     private int mCurrentKeyboardType;
     private boolean mInitialized = false;
 
     @Override
     public View onCreateInputView() {
-        mCustomVariables = new CustomVariables();
         mDatabaseHelper = new DataBaseHelper(this);
         mInputView = (InputView) LayoutInflater.from(this).inflate(R.layout.input_view, null);
         createKeyboardLayout();
@@ -39,47 +38,55 @@ public class CheatAKeyService extends InputMethodService {
 
     private void createKeyboardLayout() {
         KeyboardJanKey mKeyboardJanKey;
+        KeyboardPrinKey mKeyboardPrinKey;
         KeyboardJoKey mKeyboardJoKey;
-        if (getCurrentKeyboardType() == mCustomVariables.SETTINGS_KEYBOARD_TYPE_JOKEY) {
-            mCurrentKeyboardType = mCustomVariables.SETTINGS_KEYBOARD_TYPE_JOKEY;
-            if (mDatabaseHelper.getBooleanSettingValue(mCustomVariables.SETTINGS_USE_NUMBER_ROW)) {
-                mKeyboardJoKey = KeyboardJoKey.jokey_num(this);
+        KeyboardSunKey mKeyboardSunKey;
+        if (getCurrentKeyboardType() == Utils.SETTINGS_KEYBOARD_TYPE_PRINKEY) {
+            System.out.println("MYLOG | Create PrinKey");
+            mCurrentKeyboardType = Utils.SETTINGS_KEYBOARD_TYPE_PRINKEY;
+            if (mDatabaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_NUMBER_ROW)) {
+                mKeyboardPrinKey = KeyboardPrinKey.prinkey_num(this);
             } else {
-                mKeyboardJoKey = KeyboardJoKey.jokey(this);
+                mKeyboardPrinKey = KeyboardPrinKey.prinkey(this);
             }
-            mInputView.addView(mKeyboardJoKey.inflateKeyboardView(LayoutInflater.from(this), mInputView));
-        } else if (getCurrentKeyboardType() == mCustomVariables.SETTINGS_KEYBOARD_TYPE_JANKEY) {
-            mCurrentKeyboardType = mCustomVariables.SETTINGS_KEYBOARD_TYPE_JANKEY;
-            if (mDatabaseHelper.getBooleanSettingValue(mCustomVariables.SETTINGS_USE_NUMBER_ROW)) {
+            mInputView.addView(mKeyboardPrinKey.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+        } else if (getCurrentKeyboardType() == Utils.SETTINGS_KEYBOARD_TYPE_JANKEY) {
+            System.out.println("MYLOG | Create JanKey");
+            mCurrentKeyboardType = Utils.SETTINGS_KEYBOARD_TYPE_JANKEY;
+            if (mDatabaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_NUMBER_ROW)) {
                 mKeyboardJanKey = KeyboardJanKey.jankey_num(this);
             } else {
                 mKeyboardJanKey = KeyboardJanKey.jankey(this);
             }
             mInputView.addView(mKeyboardJanKey.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+        } else if (getCurrentKeyboardType() == Utils.SETTINGS_KEYBOARD_TYPE_SUNKEY) {
+            System.out.println("MYLOG | Create SunKey");
+            mCurrentKeyboardType = Utils.SETTINGS_KEYBOARD_TYPE_SUNKEY;
+            if (mDatabaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_NUMBER_ROW)) {
+                mKeyboardSunKey = KeyboardSunKey.sunkey_num(this);
+            } else {
+                mKeyboardSunKey = KeyboardSunKey.sunkey(this);
+            }
+            mInputView.addView(mKeyboardSunKey.inflateKeyboardView(LayoutInflater.from(this), mInputView));
+        } else {
+            // getCurrentKeyboardType() == Utils.SETTINGS_KEYBOARD_TYPE_JOKEY
+            System.out.println("MYLOG | Create JoKey");
+            mCurrentKeyboardType = Utils.SETTINGS_KEYBOARD_TYPE_JOKEY;
+            if (mDatabaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_NUMBER_ROW)) {
+                mKeyboardJoKey = KeyboardJoKey.jokey_num(this);
+            } else {
+                mKeyboardJoKey = KeyboardJoKey.jokey(this);
+            }
+            mInputView.addView(mKeyboardJoKey.inflateKeyboardView(LayoutInflater.from(this), mInputView));
         }
     }
 
     private int getCurrentKeyboardType() {
-        return mDatabaseHelper.getIntegerSettingValue(mCustomVariables.SETTINGS_KEYBOARD_TYPE);
+        return mDatabaseHelper.getIntegerSettingValue(Utils.SETTINGS_KEYBOARD_TYPE);
     }
 
     public Vibrator getVibratorService() {
         return (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-    }
-
-    boolean checkDoubleSpaceToPeriod() {
-        InputConnection inputConnection = getInputConnection();
-        if (!mDatabaseHelper.getBooleanSettingValue(mCustomVariables.SETTINGS_USE_AUTO_PERIOD)) {
-            return false;
-        }
-        CharSequence lastText = inputConnection.getTextBeforeCursor(1, 0);
-        char last = lastText.length() > 0 ? lastText.charAt(0) : 'x';
-        if (last != ' ') {
-            return false;
-        }
-        inputConnection.deleteSurroundingText(1, 0);
-        inputConnection.commitText(".", 1);
-        return true;
     }
 
     public DataBaseHelper getDataBaseHelper() {
