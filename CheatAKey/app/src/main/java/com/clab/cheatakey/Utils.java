@@ -2,6 +2,10 @@ package com.clab.cheatakey;
 
 public class Utils {
     static int ALPHABET_SIZE = 26;
+    static int STATE_NORMAL = 0;
+    static int STATE_SHIFT = 1;
+    static int STATE_SYMBOL = 2;
+    static int NUM_STATES = 4;
     static String BOOLEAN_SETTINGS_MENU_LIST[] = {
             "settings_use_swipe_popup", "settings_use_vibration_feedback",
             "settings_use_sound_feedback", "settings_use_auto_complete", "settings_longpress_time",
@@ -40,5 +44,32 @@ public class Utils {
             }
         }
         return true;
+    }
+
+    static String getLabel(String data, int state) {
+        if ("SHI".equals(data)) {
+            if (state == STATE_SYMBOL) {
+                return "1/2";
+            } else if (state == STATE_SYMBOL + STATE_SHIFT) {
+                return "2/2";
+            }
+            return "↑";
+        } else if ("DEL".equals(data)) {
+            return "←";
+        } else if ("SYM".equals(data)) {
+            if (state == STATE_NORMAL || state == STATE_NORMAL + STATE_SHIFT) {
+                return "#!1";
+            } else {
+                return "abc";
+            }
+        } else if ("SPA".equals(data)) {
+            return "SPACE";
+        } else if ("ENT".equals(data)) {
+            return "Enter";
+        } else if ("VOWEL".equals(data)) {
+            return "●";
+        } else {
+            return data;
+        }
     }
 }

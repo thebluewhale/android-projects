@@ -15,12 +15,7 @@ import android.widget.TextView;
 import java.util.Locale;
 
 /** Controls the visible virtual keyboard view. */
-final class KeyboardJanKey {
-
-    private static final int STATE_NORMAL = 0;
-    private static final int STATE_SHIFT = 1;
-    private static final int STATE_SYMBOL = 2;
-    private static final int NUM_STATES = 4;
+final class KeyboardJanKey extends Keyboard {
 
     private enum GESTURE_DIRECTION {
         GUIDE_A(0), GUIDE_E(1), GUIDE_I(2),
@@ -60,33 +55,6 @@ final class KeyboardJanKey {
         initializeDataBaseHelper();
         initializeGestureDirectionUsedFlag();
         initializeDirectionCharacterMap();
-    }
-
-    private String getLabel(String data) {
-        if ("SHI".equals(data)) {
-            if (mState == STATE_SYMBOL) {
-                return "1/2";
-            } else if (mState == STATE_SYMBOL + STATE_SHIFT) {
-                return "2/2";
-            }
-            return "↑";
-        } else if ("DEL".equals(data)) {
-            return "←";
-        } else if ("SYM".equals(data)) {
-            if (mState == STATE_NORMAL || mState == STATE_NORMAL + STATE_SHIFT) {
-                return "#!1";
-            } else {
-                return "abc";
-            }
-        } else if ("SPA".equals(data)) {
-            return "SPACE";
-        } else if ("ENT".equals(data)) {
-            return "Enter";
-        } else if ("VOWEL".equals(data)) {
-            return "●";
-        } else {
-            return data;
-        }
     }
 
     static KeyboardJanKey jankey(CheatAKeyService cheatAKeyService) {
@@ -218,7 +186,7 @@ final class KeyboardJanKey {
                 } else {
                     updateGestureDirectionUsedFlag(loc, 1);
                     String gestureInput = getDirectionCharacter(loc);
-                    handleTouchDown(mState == STATE_SHIFT ? gestureInput.toUpperCase(Locale.ROOT) : gestureInput);
+                    handleTouchDown(mState == Utils.STATE_SHIFT ? gestureInput.toUpperCase(Locale.ROOT) : gestureInput);
                 }
                 break;
             default:
@@ -232,8 +200,8 @@ final class KeyboardJanKey {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
             if (softkey != null) {
                 String rawData = mKeyMapping.valueAt(i);
-                String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
-                softkey.setText(getLabel(data));
+                String data = rawData.length() != Utils.NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
+                softkey.setText(Utils.getLabel(data, mState));
                 final int index = i;
                 softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
             }
@@ -245,7 +213,7 @@ final class KeyboardJanKey {
         if (!mDataBaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
             return;
         }
-        if ((mState == STATE_SYMBOL) || (mState == STATE_SYMBOL + STATE_SHIFT)) {
+        if ((mState == Utils.STATE_SYMBOL) || (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT)) {
             return;
         }
         if (!Utils.isWordContainsAlphabetOnly(data)) {
@@ -267,7 +235,7 @@ final class KeyboardJanKey {
             getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
                     dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -30, newLocation);
             View mGestureGuideViewA = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewA).setText(mState == STATE_SHIFT ? "A" : "a");
+            ((TextView) mGestureGuideViewA).setText(mState == Utils.STATE_SHIFT ? "A" : "a");
 
             if (mGestureGuideViewA.getParent() != null) {
                 ((ViewGroup) mGestureGuideViewA.getParent()).removeView(mGestureGuideViewA);
@@ -281,7 +249,7 @@ final class KeyboardJanKey {
             getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
                     dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -80, newLocation);
             View mGestureGuideViewE = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewE).setText(mState == STATE_SHIFT ? "E" : "e");
+            ((TextView) mGestureGuideViewE).setText(mState == Utils.STATE_SHIFT ? "E" : "e");
 
             if (mGestureGuideViewE.getParent() != null) {
                 ((ViewGroup) mGestureGuideViewE.getParent()).removeView(mGestureGuideViewE);
@@ -295,7 +263,7 @@ final class KeyboardJanKey {
             getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
                     dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -130, newLocation);
             View mGestureGuideViewI = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewI).setText(mState == STATE_SHIFT ? "I" : "i");
+            ((TextView) mGestureGuideViewI).setText(mState == Utils.STATE_SHIFT ? "I" : "i");
 
             if (mGestureGuideViewI.getParent() != null) {
                 ((ViewGroup) mGestureGuideViewI.getParent()).removeView(mGestureGuideViewI);
@@ -309,7 +277,7 @@ final class KeyboardJanKey {
             getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
                     dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -180, newLocation);
             View mGestureGuideViewO = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewO).setText(mState == STATE_SHIFT ? "O" : "o");
+            ((TextView) mGestureGuideViewO).setText(mState == Utils.STATE_SHIFT ? "O" : "o");
 
             if (mGestureGuideViewO.getParent() != null) {
                 ((ViewGroup) mGestureGuideViewO.getParent()).removeView(mGestureGuideViewO);
@@ -323,7 +291,7 @@ final class KeyboardJanKey {
             getPointFromAngle(softkeyLocation[0], softkeyLocation[1],
                     dpToPx(Utils.GESTURE_GUIDE_VIEW_DISTANCE), -230, newLocation);
             View mGestureGuideViewU = mLayoutInflater.inflate(R.layout.gesture_guide_jankey, null);
-            ((TextView) mGestureGuideViewU).setText(mState == STATE_SHIFT ? "U" : "u");
+            ((TextView) mGestureGuideViewU).setText(mState == Utils.STATE_SHIFT ? "U" : "u");
 
             if (mGestureGuideViewU.getParent() != null) {
                 ((ViewGroup) mGestureGuideViewU.getParent()).removeView(mGestureGuideViewU);
@@ -349,11 +317,11 @@ final class KeyboardJanKey {
                     VibrationEffect.createOneShot(15, VibrationEffect.DEFAULT_AMPLITUDE));
         }
         if ("SHI".equals(data)) {
-            mState = mState ^ STATE_SHIFT;
+            mState = mState ^ Utils.STATE_SHIFT;
             mapKeys();
             return;
         } else if ("SYM".equals(data)) {
-            mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
+            mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
             mapKeys();
             return;
         }

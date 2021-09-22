@@ -23,11 +23,6 @@ import java.util.TimerTask;
 /** Controls the visible virtual keyboard view. */
 final class KeyboardSunKey {
 
-    private static final int STATE_NORMAL = 0;
-    private static final int STATE_SHIFT = 1;
-    private static final int STATE_SYMBOL = 2;
-    private static final int NUM_STATES = 4;
-
     private enum GESTURE_DIRECTION {
         UP(0), RIGHTUP(1), RIGHT(2), RIGHTDOWN(3),
         DOWN(4), LEFTDOWN(5), LEFT(6), LEFTUP(7);
@@ -70,33 +65,6 @@ final class KeyboardSunKey {
         initializeGestureDirectionUsedFlag();
         initializeDirectionCharacterMap();
 //        createKeyIdArray();
-    }
-
-    private String getLabel(String data) {
-        if ("SHI".equals(data)) {
-            if (mState == STATE_SYMBOL) {
-                return "1/2";
-            } else if (mState == STATE_SYMBOL + STATE_SHIFT) {
-                return "2/2";
-            }
-            return "↑";
-        } else if ("DEL".equals(data)) {
-            return "←";
-        } else if ("SYM".equals(data)) {
-            if (mState == STATE_NORMAL || mState == STATE_NORMAL + STATE_SHIFT) {
-                return "#!1";
-            } else {
-                return "abc";
-            }
-        } else if ("SPA".equals(data)) {
-            return "SPACE";
-        } else if ("ENT".equals(data)) {
-            return "Enter";
-        } else if ("VOWEL".equals(data)) {
-            return "●";
-        } else {
-            return data;
-        }
     }
 
     static KeyboardSunKey sunkey(CheatAKeyService cheatAKeyService) {
@@ -301,8 +269,8 @@ final class KeyboardSunKey {
             TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
             if (softkey != null) {
                 String rawData = mKeyMapping.valueAt(i);
-                String data = rawData.length() != NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
-                softkey.setText(getLabel(data));
+                String data = rawData.length() != Utils.NUM_STATES ? rawData : rawData.substring(mState, mState + 1);
+                softkey.setText(Utils.getLabel(data, mState));
                 final int index = i;
                 softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, softkey, index, data));
             }
@@ -313,7 +281,7 @@ final class KeyboardSunKey {
         if (!mDataBaseHelper.getBooleanSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
             return;
         }
-        if ((mState == STATE_SYMBOL) || (mState == STATE_SYMBOL + STATE_SHIFT)) {
+        if ((mState == Utils.STATE_SYMBOL) || (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT)) {
             return;
         }
         if (!Utils.isWordContainsAlphabetOnly(data)) {
@@ -345,11 +313,11 @@ final class KeyboardSunKey {
                     VibrationEffect.createOneShot(15, VibrationEffect.DEFAULT_AMPLITUDE));
         }
         if ("SHI".equals(data)) {
-            mState = mState ^ STATE_SHIFT;
+            mState = mState ^ Utils.STATE_SHIFT;
             mapKeys();
             return;
         } else if ("SYM".equals(data)) {
-            mState = (mState ^ STATE_SYMBOL) & ~STATE_SHIFT;
+            mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
             mapKeys();
             return;
         }
@@ -371,10 +339,10 @@ final class KeyboardSunKey {
     }
 
     private void handleGestureInput(String data) {
-        if ((mState == STATE_SYMBOL) || (mState == STATE_SYMBOL + STATE_SHIFT)) {
+        if ((mState == Utils.STATE_SYMBOL) || (mState == Utils.STATE_SYMBOL + Utils.STATE_SHIFT)) {
             return;
         }
-        handleTouchDown(mState == STATE_SHIFT ? data.toUpperCase(Locale.ROOT) : data);
+        handleTouchDown(mState == Utils.STATE_SHIFT ? data.toUpperCase(Locale.ROOT) : data);
     }
 
     void reset() {
