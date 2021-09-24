@@ -5,6 +5,9 @@
       <map>
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/drawable-v24/gesture_guide_background.xml" value="0.24166666666666667" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/input_view.xml" value="0.1793478260869565" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/keyboard_10_9_9.xml" value="0.1875" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/keyboard_english.xml" value="0.1875" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/keyboard_korean.xml" value="0.1875" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/xml/root_preferences.xml" value="0.1793478260869565" />
       </map>
     </option>

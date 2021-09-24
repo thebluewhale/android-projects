@@ -28,14 +28,6 @@
         app:title="키보드 옵션"
         app:iconSpaceReserved="false">
 
-<!--        <ListPreference-->
-<!--            app:key="settings_longpress_time"-->
-<!--            app:title="롱프레스 시간 설정"-->
-<!--            app:summary="롱프레스로 입력되는 시점을 설정합니다."-->
-<!--            app:entryValues="@array/longpress_time"-->
-<!--            app:entries="@array/longpress_time"-->
-<!--            app:iconSpaceReserved="false" />-->
-
         <CheckBoxPreference
             app:key="settings_use_auto_period"
             app:title="자동 마침표 입력"
@@ -52,10 +44,6 @@
     <PreferenceCategory
         app:title="About"
         app:iconSpaceReserved="false">
-
-<!--        <Preference-->
-<!--            app:title="도움말"-->
-<!--            app:iconSpaceReserved="false" />-->
 
         <Preference
             app:title="버전"

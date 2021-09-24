@@ -74,7 +74,7 @@
         <TextView
             android:id="@+id/key_pos_1_0"
             style="@style/SoftKey"
-            android:layout_marginLeft="22.5dp" />
+            android:layout_marginStart="22.5dp" />
         <TextView
             android:id="@+id/key_pos_1_1"
             style="@style/SoftKey" />
@@ -99,7 +99,7 @@
         <TextView
             android:id="@+id/key_pos_1_8"
             style="@style/SoftKey"
-            android:layout_marginRight="22.5dp" />
+            android:layout_marginEnd="22.5dp" />
     </LinearLayout>
 
     <LinearLayout style="@style/KeyboardRow">
@@ -145,6 +145,9 @@
         <TextView
             android:id="@+id/key_pos_bottom_0"
             style="@style/SoftKey" />
+        <TextView
+            android:id="@+id/key_pos_change_lang"
+            style="@style/SoftKey.Function" />
         <TextView
             android:id="@+id/key_pos_settings"
             style="@style/SoftKey" />
