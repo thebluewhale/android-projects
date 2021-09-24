@@ -12,11 +12,28 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
 /** Controls the visible virtual keyboard view. */
 final class KeyboardKorean extends Keyboard{
+
+    private char mChosung = '\u0000';
+    private char mJungsung = '\u0000';
+    private char mJongsung = '\u0000';
+    private char mJongsungFlag = '\u0000';
+    private char mDoubleJongsungFlag = '\u0000';
+    private char mJungsungFlag = '\u0000';
+    private Integer[] mChosungArray = {0x3131, 0x3132, 0x3134, 0x3137, 0x3138, 0x3139, 0x3141, 0x3142, 0x3143, 0x3145, 0x3146, 0x3147, 0x3148, 0x3149, 0x314a, 0x314b, 0x314c, 0x314d, 0x314e};
+    private Integer[] mJungsungArray = {0x314f, 0x3150, 0x3151, 0x3152, 0x3153, 0x3154, 0x3155, 0x3156, 0x3157, 0x3158, 0x3159, 0x315a, 0x315b, 0x315c, 0x315d, 0x315e, 0x315f, 0x3160, 0x3161, 0x3162, 0x3163};
+    private Integer[] mJongsungArray = {0x0000, 0x3131, 0x3132, 0x3133, 0x3134, 0x3135, 0x3136, 0x3137, 0x3139, 0x313a, 0x313b, 0x313c, 0x313d, 0x313e, 0x313f, 0x3140, 0x3141, 0x3142, 0x3144, 0x3145, 0x3146, 0x3147, 0x3148, 0x314a, 0x314b, 0x314c, 0x314d, 0x314e};
+    ArrayList<Integer> mChosungList = new ArrayList<>(Arrays.asList(mChosungArray));
+    ArrayList<Integer> mJungsungList = new ArrayList<>(Arrays.asList(mJungsungArray));
+    ArrayList<Integer> mJongSungList = new ArrayList<>(Arrays.asList(mJongsungArray));
+    private int mCommitState = 0;
 
     private KeyboardKorean(CheaBoardService cheaBoardService, int viewResId,
                      SparseArray<String> keyMapping) {
@@ -120,18 +137,18 @@ final class KeyboardKorean extends Keyboard{
         switch (data) {
             case "DEL":
                 inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                if (InputWordController.get().getLength() > 0) {
-                    InputWordController.get().deleteLastWord();
-                }
+                // TODO : implement delete()
                 break;
             case "ENT":
+                directlyCommit();
                 inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 break;
             case "SPA":
+                directlyCommit();
                 inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_SPACE));
-                InputWordController.get().appendWord(' ');
                 break;
             case "SET":
+                directlyCommit();
                 mCheaBoardService.startSettingsActivity();
                 break;
             case "SHI":
@@ -139,16 +156,17 @@ final class KeyboardKorean extends Keyboard{
                 mapKeys();
                 break;
             case "SYM":
+                directlyCommit();
                 mState = (mState ^ Utils.STATE_SYMBOL) & ~Utils.STATE_SHIFT;
                 mapKeys();
                 break;
             case "LNG":
+                directlyCommit();
                 mCheaBoardService.changeKeyboardType(Utils.KEYBOARD_TYPE_KOREAN);
                 break;
             default:
                 char c = data.charAt(0);
-                inputConnection.commitText(data, 1);
-                InputWordController.get().appendWord(c);
+                commit(c);
         }
     }
 
@@ -181,18 +199,241 @@ final class KeyboardKorean extends Keyboard{
         }
     }
 
-    private boolean isGestureInsideOfKey(TextView softkey, float currentX, float currentY) {
-        int[] location = new int[2];
-        softkey.getLocationInWindow(location);
-        float x1 = location[0];
-        float y1 = location[1];
-        float x2 = x1 + softkey.getWidth();
-        float y2 = y1 + softkey.getHeight();
-        float gestureX = currentX + x1;
-        float gestureY = currentY + y1;
-        if (gestureX >= x1 && gestureY >= y1 && gestureX <= x2 && gestureY <= y2) {
-            return true;
+    private void initializeCommitData() {
+        mChosung = mJungsung = mJongsung = mJongsungFlag
+                = mDoubleJongsungFlag = mJungsungFlag = '\u0000';
+    }
+
+    private char makeHan() {
+        if (mCommitState == 0) {
+            return '\u0000';
+        } else if (mCommitState == 1) {
+            return mChosung;
+        }
+        int chosungIndex = mChosungList.indexOf(Utils.charToInt(mChosung));
+        int jungsungIndex = mJungsungList.indexOf(Utils.charToInt(mJungsung));
+        int jongsungIndex = mJongSungList.indexOf(Utils.charToInt(mJongsung));
+
+        int makeResult = 0xAC00 + (28 * 21 * (chosungIndex)) + (28 * (jungsungIndex)) + jongsungIndex;
+        return Utils.intToChar(makeResult);
+    }
+
+    private void commit(char c) {
+        if (!mChosungList.contains(Utils.charToInt(c)) &&
+                !mJungsungList.contains(Utils.charToInt(c)) &&
+                !mJongSungList.contains(Utils.charToInt(c))) {
+            directlyCommit();
+            mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+            return;
+        }
+        switch (mCommitState) {
+            case 0:
+                if (mJungsungList.contains(Utils.charToInt(c))) {
+                    mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+                } else {
+                    mCommitState = 1;
+                    mChosung = c;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(c), 1);
+                }
+                break;
+            case 1:
+                if (mChosungList.contains(Utils.charToInt(c))) {
+                    mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+                    initializeCommitData();
+                    mChosung = c;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(c), 1);
+                } else {
+                    mCommitState = 2;
+                    mJungsung = c;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                }
+                break;
+            case 2:
+                if (mJungsungList.contains(Utils.charToInt(c))) {
+                    if (isDoubleJungsungEnable(c)) {
+                        mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    } else {
+                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                        mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+                        initializeCommitData();
+                        mCommitState = 0;
+                    }
+                } else if (mJongSungList.contains(Utils.charToInt(c))) {
+                    // 종성이 들어온 경우
+                    mJongsung = c;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    mCommitState = 3;
+                } else {
+                    directlyCommit();
+                    mChosung = c;
+                    mCommitState = 1;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                }
+                break;
+            case 3:
+                if (mJongSungList.contains(Utils.charToInt(c))) {
+                    if (isDoubleJongsungEnable(c)) {
+                        mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    } else {
+                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                        initializeCommitData();
+                        mCommitState = 1;
+                        mChosung = c;
+                        mCheaBoardService.getInputConnection().setComposingText(Character.toString(mChosung), 1);
+                    }
+                } else if (mChosungList.contains(Utils.charToInt(c))) {
+                    mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                    mCommitState = 1;
+                    initializeCommitData();
+                    mChosung = c;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(mChosung), 1);
+                } else {
+                    // 중성이 들어올 경우
+                    char temp = '\u0000';
+                    if (mDoubleJongsungFlag == '\u0000') {
+                        temp = mJongsung;
+                        mJongsung = '\u0000';
+                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                    } else {
+                        temp = mDoubleJongsungFlag;
+                        mJongsung = mJongsungFlag;
+                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                    }
+                    mCommitState = 2;
+                    initializeCommitData();
+                    mChosung = temp;
+                    mJungsung = c;
+                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                }
+                break;
+        }
+    }
+
+    private void directlyCommit() {
+        if (mCommitState == 0) {
+            return;
+        }
+        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+        mCommitState = 0;
+        initializeCommitData();
+    }
+
+    private boolean isDoubleJungsungEnable(char c) {
+        if (mJungsung == 'ㅗ') {
+            if (c == 'ㅏ') {
+                mJungsung = 'ㅘ';
+                return true;
+            } else if (c == 'ㅣ') {
+                mJungsung = 'ㅚ';
+                return true;
+            }
+        } else if (mJungsung == 'ㅜ') {
+            if (c == 'ㅓ') {
+                mJungsung = 'ㅝ';
+                return true;
+            } else if (c == 'ㅣ') {
+                mJungsung = 'ㅟ';
+                return true;
+            }
+        } else if (mJungsung == 'ㅡ') {
+            if (c == 'ㅣ') {
+                mJungsung = 'ㅢ';
+                return true;
+            }
         }
         return false;
     }
+
+    private boolean isDoubleJongsungEnable(char c) {
+        if (mJongsung == 'ㄱ') {
+            if (c == 'ㅅ') {
+                mJongsung = 'ㄳ';
+                return true;
+            }
+        } else if (mJongsung == 'ㄴ') {
+            if (c == 'ㅈ') {
+                mJongsung = 'ㄵ';
+                return true;
+            } else if (c == 'ㅎ') {
+                mJongsung = 'ㄶ';
+                return true;
+            }
+        } else if (mJongsung == 'ㄹ') {
+            if (c == 'ㄱ') {
+                mJongsung = 'ㄺ';
+                return true;
+            } else if (c == 'ㅁ') {
+                mJongsung = 'ㄻ';
+                return true;
+            } else if (c == 'ㅂ') {
+                mJongsung = 'ㄼ';
+                return true;
+            } else if (c == 'ㅅ') {
+                mJongsung = 'ㄽ';
+                return true;
+            } else if (c == 'ㅌ') {
+                mJongsung = 'ㄾ';
+                return true;
+            } else if (c == 'ㅍ') {
+                mJongsung = 'ㄿ';
+                return true;
+            } else if (c == 'ㅎ') {
+                mJongsung = 'ㅀ';
+                return true;
+            }
+        } else if (mJongsung == 'ㅂ') {
+            if (c == 'ㅅ') {
+                mJongsung = 'ㅄ';
+                return true;
+            }
+        }
+        return false;
+    }
+
+//    open fun delete(){
+//        when(state){
+//            0 -> {
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+//                    inputConnection.deleteSurroundingTextInCodePoints(1,0)
+//                }
+//                else{
+//                    inputConnection.deleteSurroundingText(1, 0)
+//                }
+//                inputConnection.commitText("",1)
+//            }
+//            1 -> {
+//                cho = '\u0000'
+//                state = 0
+//                inputConnection.setComposingText("", 1)
+//                inputConnection.commitText("",1)
+//            }
+//            2 -> {
+//                if(junFlag != '\u0000'){
+//                    jun = junFlag
+//                    junFlag = '\u0000'
+//                    state = 2
+//                    inputConnection.setComposingText(makeHan().toString(), 1)
+//                }
+//                else{
+//                    jun = '\u0000'
+//                    junFlag = '\u0000'
+//                    state = 1
+//                    inputConnection.setComposingText(cho.toString(), 1)
+//                }
+//            }
+//            3 -> {
+//                if(doubleJonFlag == '\u0000'){
+//                    jon = '\u0000'
+//                    state = 2
+//                }
+//                else{
+//                    jon = jonFlag
+//                    jonFlag = '\u0000'
+//                    doubleJonFlag = '\u0000'
+//                    state = 3
+//                }
+//                inputConnection.setComposingText(makeHan().toString(), 1)
+//            }
+//        }
+//    }
 }

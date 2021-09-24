@@ -12,6 +12,8 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -94,7 +96,7 @@ final class KeyboardEnglish extends Keyboard{
         switch (action) {
             case MotionEvent.ACTION_DOWN:
                 showGestureGuideIfNeeded(softkey, data);
-                initializeAllGestureDatas(evt.getX(), evt.getY());
+                initializeAllGestureData(evt.getX(), evt.getY());
                 handleInputEvent(data);
                 createTimer(data);
                 setKeyPressColor(softkey);
@@ -113,7 +115,7 @@ final class KeyboardEnglish extends Keyboard{
                 float mGestureCurrentY = evt.getY();
 
                 if (isGestureInsideOfKey(softkey, mGestureCurrentX, mGestureCurrentY)) {
-                    initializeAllGestureDatas(mGestureCurrentX, mGestureCurrentY);
+                    initializeAllGestureData(mGestureCurrentX, mGestureCurrentY);
                     return true;
                 }
                 if (getGestureDirectionUsedFlag(GESTURE_DIRECTION.SHOULD_COME_BACK)) {
@@ -364,7 +366,7 @@ final class KeyboardEnglish extends Keyboard{
         return mGestureDirectionUsedFlag[direction.toInt()] == 1;
     }
 
-    private void initializeAllGestureDatas(float x, float y) {
+    private void initializeAllGestureData(float x, float y) {
         initializeGestureDirectionUsedFlag();
         initializeGestureEventQueue(x, y);
         mGestureBaseX = x;

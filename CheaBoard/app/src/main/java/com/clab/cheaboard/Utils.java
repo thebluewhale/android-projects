@@ -76,4 +76,13 @@ public class Utils {
         return Math.sqrt(variance(arr));
     }
 
+
+    static int charToInt(char c) {
+        return (int)c;
+    }
+
+    static char intToChar(int i) {
+        return (char)i;
+    }
+
 }
