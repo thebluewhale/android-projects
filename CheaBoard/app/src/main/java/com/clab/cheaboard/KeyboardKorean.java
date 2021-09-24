@@ -1,7 +1,9 @@
 package com.clab.cheaboard;
 
 import android.annotation.SuppressLint;
+import android.os.Build;
 import android.os.VibrationEffect;
+import android.renderscript.ScriptGroup;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -136,8 +138,7 @@ final class KeyboardKorean extends Keyboard{
         InputConnection inputConnection = mCheaBoardService.getInputConnection();
         switch (data) {
             case "DEL":
-                inputConnection.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL));
-                // TODO : implement delete()
+                delete();
                 break;
             case "ENT":
                 directlyCommit();
@@ -162,7 +163,7 @@ final class KeyboardKorean extends Keyboard{
                 break;
             case "LNG":
                 directlyCommit();
-                mCheaBoardService.changeKeyboardType(Utils.KEYBOARD_TYPE_KOREAN);
+                mCheaBoardService.changeKeyboardType(Utils.KEYBOARD_TYPE_ENGLISH);
                 break;
             default:
                 char c = data.charAt(0);
@@ -219,91 +220,92 @@ final class KeyboardKorean extends Keyboard{
     }
 
     private void commit(char c) {
+        InputConnection inputConnection = mCheaBoardService.getInputConnection();
         if (!mChosungList.contains(Utils.charToInt(c)) &&
                 !mJungsungList.contains(Utils.charToInt(c)) &&
                 !mJongSungList.contains(Utils.charToInt(c))) {
             directlyCommit();
-            mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+            inputConnection.commitText(Character.toString(c), 1);
             return;
         }
         switch (mCommitState) {
             case 0:
                 if (mJungsungList.contains(Utils.charToInt(c))) {
-                    mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+                    inputConnection.commitText(Character.toString(c), 1);
                 } else {
                     mCommitState = 1;
                     mChosung = c;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(c), 1);
+                    inputConnection.setComposingText(Character.toString(c), 1);
                 }
                 break;
             case 1:
                 if (mChosungList.contains(Utils.charToInt(c))) {
-                    mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+                    inputConnection.commitText(Character.toString(c), 1);
                     initializeCommitData();
                     mChosung = c;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(c), 1);
+                    inputConnection.setComposingText(Character.toString(c), 1);
                 } else {
                     mCommitState = 2;
                     mJungsung = c;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    inputConnection.setComposingText(Character.toString(makeHan()), 1);
                 }
                 break;
             case 2:
                 if (mJungsungList.contains(Utils.charToInt(c))) {
                     if (isDoubleJungsungEnable(c)) {
-                        mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                        inputConnection.setComposingText(Character.toString(makeHan()), 1);
                     } else {
-                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
-                        mCheaBoardService.getInputConnection().commitText(Character.toString(c), 1);
+                        inputConnection.commitText(Character.toString(makeHan()), 1);
+                        inputConnection.commitText(Character.toString(c), 1);
                         initializeCommitData();
                         mCommitState = 0;
                     }
                 } else if (mJongSungList.contains(Utils.charToInt(c))) {
                     // 종성이 들어온 경우
                     mJongsung = c;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    inputConnection.setComposingText(Character.toString(makeHan()), 1);
                     mCommitState = 3;
                 } else {
                     directlyCommit();
                     mChosung = c;
                     mCommitState = 1;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    inputConnection.setComposingText(Character.toString(makeHan()), 1);
                 }
                 break;
             case 3:
                 if (mJongSungList.contains(Utils.charToInt(c))) {
                     if (isDoubleJongsungEnable(c)) {
-                        mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                        inputConnection.setComposingText(Character.toString(makeHan()), 1);
                     } else {
-                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                        inputConnection.commitText(Character.toString(makeHan()), 1);
                         initializeCommitData();
                         mCommitState = 1;
                         mChosung = c;
-                        mCheaBoardService.getInputConnection().setComposingText(Character.toString(mChosung), 1);
+                        inputConnection.setComposingText(Character.toString(mChosung), 1);
                     }
                 } else if (mChosungList.contains(Utils.charToInt(c))) {
-                    mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                    inputConnection.commitText(Character.toString(makeHan()), 1);
                     mCommitState = 1;
                     initializeCommitData();
                     mChosung = c;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(mChosung), 1);
+                    inputConnection.setComposingText(Character.toString(mChosung), 1);
                 } else {
                     // 중성이 들어올 경우
                     char temp = '\u0000';
                     if (mDoubleJongsungFlag == '\u0000') {
                         temp = mJongsung;
                         mJongsung = '\u0000';
-                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                        inputConnection.commitText(Character.toString(makeHan()), 1);
                     } else {
                         temp = mDoubleJongsungFlag;
                         mJongsung = mJongsungFlag;
-                        mCheaBoardService.getInputConnection().commitText(Character.toString(makeHan()), 1);
+                        inputConnection.commitText(Character.toString(makeHan()), 1);
                     }
                     mCommitState = 2;
                     initializeCommitData();
                     mChosung = temp;
                     mJungsung = c;
-                    mCheaBoardService.getInputConnection().setComposingText(Character.toString(makeHan()), 1);
+                    inputConnection.setComposingText(Character.toString(makeHan()), 1);
                 }
                 break;
         }
@@ -390,50 +392,46 @@ final class KeyboardKorean extends Keyboard{
         return false;
     }
 
-//    open fun delete(){
-//        when(state){
-//            0 -> {
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-//                    inputConnection.deleteSurroundingTextInCodePoints(1,0)
-//                }
-//                else{
-//                    inputConnection.deleteSurroundingText(1, 0)
-//                }
-//                inputConnection.commitText("",1)
-//            }
-//            1 -> {
-//                cho = '\u0000'
-//                state = 0
-//                inputConnection.setComposingText("", 1)
-//                inputConnection.commitText("",1)
-//            }
-//            2 -> {
-//                if(junFlag != '\u0000'){
-//                    jun = junFlag
-//                    junFlag = '\u0000'
-//                    state = 2
-//                    inputConnection.setComposingText(makeHan().toString(), 1)
-//                }
-//                else{
-//                    jun = '\u0000'
-//                    junFlag = '\u0000'
-//                    state = 1
-//                    inputConnection.setComposingText(cho.toString(), 1)
-//                }
-//            }
-//            3 -> {
-//                if(doubleJonFlag == '\u0000'){
-//                    jon = '\u0000'
-//                    state = 2
-//                }
-//                else{
-//                    jon = jonFlag
-//                    jonFlag = '\u0000'
-//                    doubleJonFlag = '\u0000'
-//                    state = 3
-//                }
-//                inputConnection.setComposingText(makeHan().toString(), 1)
-//            }
-//        }
-//    }
+    private void delete() {
+        InputConnection inputConnection = mCheaBoardService.getInputConnection();
+        switch (mCommitState) {
+            case 0:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    inputConnection.deleteSurroundingTextInCodePoints(1, 0);
+                } else {
+                    inputConnection.deleteSurroundingText(1, 0);
+                }
+                inputConnection.commitText("", 1);
+                break;
+            case 1:
+                mChosung = '\u0000';
+                mCommitState = 0;
+                inputConnection.setComposingText("", 1);
+                inputConnection.commitText("", 1);
+                break;
+            case 2:
+                if (mJungsungFlag != '\u0000') {
+                    mJungsung = mJungsungFlag;
+                    mJungsungFlag = '\u0000';
+                    mCommitState = 2;
+                    inputConnection.setComposingText(Character.toString(makeHan()), 1);
+                } else {
+                    mJungsung = mJungsungFlag = '\u0000';
+                    mCommitState = 1;
+                    inputConnection.setComposingText(Character.toString(mChosung), 1);
+                }
+                break;
+            case 3:
+                if (mDoubleJongsungFlag == '\u0000') {
+                    mJongsung = '\u0000';
+                    mCommitState = 2;
+                } else {
+                    mJongsung = mJongsungFlag;
+                    mJongsungFlag = mDoubleJongsungFlag = '\u0000';
+                    mCommitState = 3;
+                }
+                inputConnection.setComposingText(Character.toString(makeHan()), 1);
+                break;
+        }
+    }
 }
