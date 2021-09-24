@@ -323,22 +323,35 @@ final class KeyboardKorean extends Keyboard{
     private boolean isDoubleJungsungEnable(char c) {
         if (mJungsung == 'ㅗ') {
             if (c == 'ㅏ') {
+                mJungsungFlag = mJungsung;
                 mJungsung = 'ㅘ';
                 return true;
+            } else if (c == 'ㅐ') {
+                mJungsungFlag = mJungsung;
+                mJungsung = 'ㅙ';
+                return true;
             } else if (c == 'ㅣ') {
+                mJungsungFlag = mJungsung;
                 mJungsung = 'ㅚ';
                 return true;
             }
         } else if (mJungsung == 'ㅜ') {
             if (c == 'ㅓ') {
+                mJungsungFlag = mJungsung;
                 mJungsung = 'ㅝ';
                 return true;
+            } else if (c == 'ㅔ') {
+                mJungsungFlag = mJungsung;
+                mJungsung = 'ㅞ';
+                return true;
             } else if (c == 'ㅣ') {
+                mJungsungFlag = mJungsung;
                 mJungsung = 'ㅟ';
                 return true;
             }
         } else if (mJungsung == 'ㅡ') {
             if (c == 'ㅣ') {
+                mJungsungFlag = mJungsung;
                 mJungsung = 'ㅢ';
                 return true;
             }
@@ -347,6 +360,8 @@ final class KeyboardKorean extends Keyboard{
     }
 
     private boolean isDoubleJongsungEnable(char c) {
+        mJongsungFlag = mJongsung;
+        mDoubleJongsungFlag = c;
         if (mJongsung == 'ㄱ') {
             if (c == 'ㅅ') {
                 mJongsung = 'ㄳ';
