@@ -232,6 +232,7 @@ final class KeyboardKorean extends Keyboard{
             case 0:
                 if (mJungsungList.contains(Utils.charToInt(c))) {
                     inputConnection.commitText(Character.toString(c), 1);
+                    initializeCommitData();
                 } else {
                     mCommitState = 1;
                     mChosung = c;
@@ -240,7 +241,7 @@ final class KeyboardKorean extends Keyboard{
                 break;
             case 1:
                 if (mChosungList.contains(Utils.charToInt(c))) {
-                    inputConnection.commitText(Character.toString(c), 1);
+                    inputConnection.commitText(Character.toString(mChosung), 1);
                     initializeCommitData();
                     mChosung = c;
                     inputConnection.setComposingText(Character.toString(c), 1);
@@ -281,14 +282,14 @@ final class KeyboardKorean extends Keyboard{
                         initializeCommitData();
                         mCommitState = 1;
                         mChosung = c;
-                        inputConnection.setComposingText(Character.toString(mChosung), 1);
+                        inputConnection.setComposingText(Character.toString(c), 1);
                     }
                 } else if (mChosungList.contains(Utils.charToInt(c))) {
                     inputConnection.commitText(Character.toString(makeHan()), 1);
                     mCommitState = 1;
                     initializeCommitData();
                     mChosung = c;
-                    inputConnection.setComposingText(Character.toString(mChosung), 1);
+                    inputConnection.setComposingText(Character.toString(c), 1);
                 } else {
                     // 중성이 들어올 경우
                     char temp = '\u0000';
@@ -411,12 +412,7 @@ final class KeyboardKorean extends Keyboard{
         InputConnection inputConnection = mCheaBoardService.getInputConnection();
         switch (mCommitState) {
             case 0:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                    inputConnection.deleteSurroundingTextInCodePoints(1, 0);
-                } else {
-                    inputConnection.deleteSurroundingText(1, 0);
-                }
-                inputConnection.commitText("", 1);
+                inputConnection.deleteSurroundingText(1, 0);
                 break;
             case 1:
                 mChosung = '\u0000';

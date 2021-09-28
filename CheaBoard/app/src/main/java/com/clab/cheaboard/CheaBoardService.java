@@ -45,6 +45,7 @@ public class CheaBoardService extends InputMethodService {
 
     private void createKeyboardLayout(int type) {
         mKeyboardType = type;
+        mInputView.removeAllViews();
         if (type == Utils.KEYBOARD_TYPE_ENGLISH) {
             mKeyboardEnglish = KeyboardEnglish.createQwertyKeyboard(this);
             mInputView.addView(mKeyboardEnglish.inflateKeyboardView(LayoutInflater.from(this), mInputView));
