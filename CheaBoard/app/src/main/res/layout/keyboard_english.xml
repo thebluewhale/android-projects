@@ -154,9 +154,10 @@
             android:id="@+id/key_pos_settings"
             style="@style/SoftKey.Image"
             android:src="@drawable/icon_settings" />
-        <TextView
+        <ImageView
             android:id="@+id/key_pos_space"
-            style="@style/SoftKey.Space" />
+            style="@style/SoftKey.Image.Space"
+            android:src="@drawable/icon_space" />
         <TextView
             android:id="@+id/key_pos_bottom_1"
             style="@style/SoftKey" />

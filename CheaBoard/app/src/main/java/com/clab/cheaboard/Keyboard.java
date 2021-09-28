@@ -25,7 +25,7 @@ abstract class Keyboard {
     int mState;
     Timer mLongPressTimer;
     int mLongPressTimerFlag;
-    String[] mImageViewIdArray = {"SET", "SHI", "DEL", "ENT"};
+    String[] mImageViewIdArray = {"SET", "SHI", "DEL", "ENT", "SPA"};
     ArrayList<String> mImageViewList = new ArrayList<>(Arrays.asList(mImageViewIdArray));
 
     abstract boolean onTextViewTouch(View view, MotionEvent evt, int index, String data);
