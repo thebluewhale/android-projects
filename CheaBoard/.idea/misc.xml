@@ -4,6 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/drawable-v24/gesture_guide_background.xml" value="0.24166666666666667" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/drawable/softkey_shape_highlight.xml" value="0.20364583333333333" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/drawable/softkey_shape_normal.xml" value="0.20364583333333333" />
+        <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/gesture_guide.xml" value="0.1875" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/input_view.xml" value="0.1793478260869565" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/keyboard_10_9_9.xml" value="0.1875" />
         <entry key="..\:/Users/marc/Desktop/Projects/android-projects/CheaBoard/app/src/main/res/layout/keyboard_english.xml" value="0.1875" />

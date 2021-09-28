@@ -24,6 +24,7 @@ public class Utils {
     static int LONGPRESS_TIMER_PERIOD = 100;
 
     static int GESTURE_QUEUE_SIZE = 20;
+    static int GESTURE_GUIDE_SIZE = 145;
 
     static CHARACTER_TYPE isCharacterOrNumber(char c) {
         if (c >= 'a' && c <= 'z') {

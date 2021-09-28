@@ -102,8 +102,8 @@ final class KeyboardEnglish extends Keyboard{
             case MotionEvent.ACTION_UP:
                 hideGestureGuide();
                 terminateTimer();
-                enlargeKeysIfNeeded();
                 resetKeyColor(softkey);
+                enlargeKeysIfNeeded();
                 break;
             case MotionEvent.ACTION_MOVE:
                 if (Utils.isFunctionKey(data)) {
@@ -199,11 +199,11 @@ final class KeyboardEnglish extends Keyboard{
 
     private void showGestureGuideIfNeeded(TextView softkey, String data) {
         float softkeyWidth = softkey.getWidth();
-        float gestureGuideViewWidth = dpToPx(101);
+        float gestureGuideViewWidth = dpToPx(Utils.GESTURE_GUIDE_SIZE);
         int []outLocation = new int[2];
         softkey.getLocationInWindow(outLocation);
         float locationX = outLocation[0] - ((gestureGuideViewWidth - softkeyWidth) / 2);
-        float locationY = outLocation[1] - dpToPx(101);
+        float locationY = outLocation[1] - dpToPx(Utils.GESTURE_GUIDE_SIZE);
         if (!mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_SWIPE_POPUP)) {
             return;
         }
@@ -225,8 +225,8 @@ final class KeyboardEnglish extends Keyboard{
             ((ViewGroup) mGestureGuideView.getParent()).removeView(mGestureGuideView);
         }
         mGestureGuideViewContainer.setContentView(mGestureGuideView);
-        mGestureGuideViewContainer.setWidth(dpToPx(101));
-        mGestureGuideViewContainer.setHeight(dpToPx(101));
+        mGestureGuideViewContainer.setWidth(dpToPx(Utils.GESTURE_GUIDE_SIZE));
+        mGestureGuideViewContainer.setHeight(dpToPx(Utils.GESTURE_GUIDE_SIZE));
         mGestureGuideViewContainer.showAtLocation(softkey, 0, Math.round(locationX), Math.round(locationY));
     }
 

@@ -8,11 +8,11 @@
     <dimen name="keyboard_header_height">104dp</dimen>
     <dimen name="keyboard_row_height">55dp</dimen>
 
-    <dimen name="gesture_guide_width">101dp</dimen>
-    <dimen name="gesture_guide_height">101dp</dimen>
+    <dimen name="gesture_guide_width">145dp</dimen>
+    <dimen name="gesture_guide_height">145dp</dimen>
     <dimen name="gesture_guide_padding">1dp</dimen>
 
-    <dimen name="gesture_guide_cell_width">32dp</dimen>
-    <dimen name="gesture_guide_cell_height">32dp</dimen>
+    <dimen name="gesture_guide_cell_width">40dp</dimen>
+    <dimen name="gesture_guide_cell_height">40dp</dimen>
     <dimen name="gesture_guide_cell_margin">0.5dp</dimen>
 </resources>

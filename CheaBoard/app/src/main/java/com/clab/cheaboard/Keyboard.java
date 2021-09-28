@@ -56,7 +56,7 @@ abstract class Keyboard {
     }
 
     final void setKeyPressColor(TextView softkey) {
-        softkey.setBackgroundResource(R.drawable.softkey_shape_press);
+        softkey.setPressed(true);
     }
 
     final void setKeyHighlightColor(TextView softkey) {
@@ -65,6 +65,7 @@ abstract class Keyboard {
 
     final void resetKeyColor(TextView softkey) {
         softkey.setBackgroundResource(R.drawable.softkey_shape_normal);
+        softkey.setPressed(false);
     }
 
     final int getState() {
