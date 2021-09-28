@@ -9,6 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import androidx.annotation.Nullable;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class DataBaseHelper extends SQLiteOpenHelper {
     public static final String DATABASE_NAME = "cheaboard.db";
@@ -29,8 +31,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         String query = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(";
-        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
-            query = query + menu + " INTEGER DEFAULT 0,";
+        for (Map.Entry<String, Integer> entry : Utils.BOOLEAN_SETTINGS_MENU_MAP.entrySet()) {
+            query = query + entry.getKey() + " INTEGER DEFAULT " + entry.getValue() + ",";
         }
         query = query.substring(0, query.length() - 1) + ")";
         db.execSQL(query);
@@ -50,10 +52,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public boolean insertBoolean(HashMap<String, Integer> map) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
-        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
-            int value = map.get(menu);
-            contentValues.put(menu, value);
+        for (Map.Entry<String, Integer> entry : Utils.BOOLEAN_SETTINGS_MENU_MAP.entrySet()) {
+            int value = map.get(entry.getKey());
+            contentValues.put(entry.getKey(), value);
         }
+
         long result = db.insert(TABLE_NAME, null, contentValues);
         if (result == -1) {
             return false;

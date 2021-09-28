@@ -8,7 +8,13 @@
         <CheckBoxPreference
             app:key="settings_use_swipe_popup"
             app:title="Swipe 팝업 사용"
-            app:summary="Swipe 팝업 사용을 설정하니다."
+            app:summary="Swipe 팝업 사용을 설정합니다."
+            app:iconSpaceReserved="false" />
+
+        <CheckBoxPreference
+            app:key="settings_use_trie"
+            app:title="다음 글자 키 확대"
+            app:summary="다음에 올 확률이 높은 키를 크게 만듭니다."
             app:iconSpaceReserved="false" />
 
     </PreferenceCategory>

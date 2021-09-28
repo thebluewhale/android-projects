@@ -1,12 +1,14 @@
 package com.clab.cheaboard;
 
 import android.annotation.SuppressLint;
+import android.media.Image;
 import android.os.VibrationEffect;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputConnection;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -87,7 +89,7 @@ final class KeyboardKorean extends Keyboard{
     }
 
     @Override
-    boolean onSoftkeyTouch(View view, MotionEvent evt, int index, String data) {
+    boolean onTextViewTouch(View view, MotionEvent evt, int index, String data) {
         int action = evt.getActionMasked();
         TextView softkey = (TextView) view;
 
@@ -102,7 +104,28 @@ final class KeyboardKorean extends Keyboard{
                 resetKeyColor(softkey);
                 break;
             default:
-                // do nothing
+                terminateTimer();
+        }
+        return true;
+    }
+
+    @Override
+    boolean onImageViewTouch(View view, MotionEvent evt, int index, String data) {
+        int action = evt.getActionMasked();
+        ImageView imagekey = (ImageView) view;
+
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                handleInputEvent(data);
+                createTimer(data);
+                setKeyPressColor(imagekey);
+                break;
+            case MotionEvent.ACTION_UP:
+                terminateTimer();
+                resetKeyColor(imagekey);
+                break;
+            default:
+                terminateTimer();
         }
         return true;
     }
@@ -110,13 +133,24 @@ final class KeyboardKorean extends Keyboard{
     @SuppressLint("ClickableViewAccessibility")
     void mapKeys() {
         for (int i = 0; i < mKeyMapping.size(); i++) {
-            TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
-            if (softkey != null) {
-                String rawData = mKeyMapping.valueAt(i);
-                String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
-                softkey.setText(getLabelFromRawString(data));
-                final int index = i;
-                softkey.setOnTouchListener((view, evt) -> onSoftkeyTouch(view, evt, index, data));
+            String value = mKeyMapping.valueAt(i);
+            if (mImageViewList.contains(value)) {
+                ImageView imagekey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
+                if (imagekey != null) {
+                    String rawData = mKeyMapping.valueAt(i);
+                    String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
+                    final int index = i;
+                    imagekey.setOnTouchListener((view, evt) -> onImageViewTouch(view, evt, index, data));
+                }
+            } else {
+                TextView softkey = mKeyboardView.findViewById(mKeyMapping.keyAt(i));
+                if (softkey != null) {
+                    String rawData = mKeyMapping.valueAt(i);
+                    String data = rawData.length() != Utils.STATE_NUMBER ? rawData : rawData.substring(mState, mState + 1);
+                    softkey.setText(getLabelFromRawString(data));
+                    final int index = i;
+                    softkey.setOnTouchListener((view, evt) -> onTextViewTouch(view, evt, index, data));
+                }
             }
         }
     }

@@ -10,6 +10,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class SettingsMain extends AppCompatActivity {
     private DataBaseHelper mDataBaseHelper;
@@ -45,9 +46,9 @@ public class SettingsMain extends AppCompatActivity {
         super.onStop();
         mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         HashMap<String, Integer> settings = new HashMap<>();
-        for (String menu : Utils.BOOLEAN_SETTINGS_MENU_LIST) {
-            boolean value = mSharedPreferences.getBoolean(menu, false);
-            settings.put(menu, value ? 1 : 0);
+        for (Map.Entry<String, Integer> entry : Utils.BOOLEAN_SETTINGS_MENU_MAP.entrySet()) {
+            boolean value = mSharedPreferences.getBoolean(entry.getKey(), false);
+            settings.put(entry.getKey(), value ? 1 : 0);
         }
         mDataBaseHelper.insertBoolean(settings);
     }

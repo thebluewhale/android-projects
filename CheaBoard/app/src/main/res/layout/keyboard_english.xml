@@ -104,9 +104,10 @@
 
     <LinearLayout style="@style/KeyboardRow">
         <LinearLayout style="@style/BottomFunctionKeyContainer">
-            <TextView
+            <ImageView
                 android:id="@+id/key_pos_shift"
-                style="@style/SoftKey.Function" />
+                style="@style/SoftKey.Image.Shit"
+                android:src="@drawable/icon_right_arrow" />
         </LinearLayout>
         <LinearLayout style="@style/BottomSoftKeyContainer">
             <TextView
@@ -132,9 +133,10 @@
                 style="@style/SoftKey" />
         </LinearLayout>
         <LinearLayout style="@style/BottomFunctionKeyContainer">
-            <TextView
+            <ImageView
                 android:id="@+id/key_pos_del"
-                style="@style/SoftKey.Function" />
+                style="@style/SoftKey.Image.Delete"
+                android:src="@drawable/icon_delete" />
         </LinearLayout>
     </LinearLayout>
 
@@ -148,18 +150,20 @@
         <TextView
             android:id="@+id/key_pos_change_lang"
             style="@style/SoftKey.Function" />
-        <TextView
+        <ImageView
             android:id="@+id/key_pos_settings"
-            style="@style/SoftKey" />
+            style="@style/SoftKey.Image"
+            android:src="@drawable/icon_settings" />
         <TextView
             android:id="@+id/key_pos_space"
             style="@style/SoftKey.Space" />
         <TextView
             android:id="@+id/key_pos_bottom_1"
             style="@style/SoftKey" />
-        <TextView
+        <ImageView
             android:id="@+id/key_pos_enter"
-            style="@style/SoftKey.Function" />
+            style="@style/SoftKey.Image"
+            android:src="@drawable/icon_enter" />
     </LinearLayout>
 
 </LinearLayout>

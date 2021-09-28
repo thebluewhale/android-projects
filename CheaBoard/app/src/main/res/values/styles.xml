@@ -66,6 +66,52 @@
         <item name="android:radius">10dp</item>
     </style>
 
+    <style name="SoftKey.Image">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">35</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:background">@drawable/softkey_shape_normal</item>
+        <item name="android:layout_marginLeft">2.5dp</item>
+        <item name="android:layout_marginRight">2.5dp</item>
+        <item name="android:radius">10dp</item>
+        <item name="android:padding">7dp</item>
+    </style>
+
+    <style name="SoftKey.Image.Shit">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">35</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:background">@drawable/softkey_shape_normal</item>
+        <item name="android:layout_marginLeft">2.5dp</item>
+        <item name="android:layout_marginRight">2.5dp</item>
+        <item name="android:radius">10dp</item>
+        <item name="android:padding">15dp</item>
+        <item name="android:rotation">270</item>
+    </style>
+
+    <style name="SoftKey.Image.Delete">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">35</item>
+        <item name="android:layout_height">45dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textSize">@dimen/text_size_normal</item>
+        <item name="android:background">@drawable/softkey_shape_normal</item>
+        <item name="android:layout_marginLeft">2.5dp</item>
+        <item name="android:layout_marginRight">2.5dp</item>
+        <item name="android:radius">10dp</item>
+        <item name="android:padding">15dp</item>
+    </style>
+
     <style name="BottomFunctionKeyContainer">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_weight">50</item>

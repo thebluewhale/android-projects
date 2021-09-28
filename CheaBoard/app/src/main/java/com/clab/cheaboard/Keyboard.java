@@ -6,6 +6,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.constraintlayout.widget.ConstraintSet;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -21,8 +25,11 @@ abstract class Keyboard {
     int mState;
     Timer mLongPressTimer;
     int mLongPressTimerFlag;
+    String[] mImageViewIdArray = {"SET", "SHI", "DEL", "ENT"};
+    ArrayList<String> mImageViewList = new ArrayList<>(Arrays.asList(mImageViewIdArray));
 
-    abstract boolean onSoftkeyTouch(View view, MotionEvent evt, int index, String data);
+    abstract boolean onTextViewTouch(View view, MotionEvent evt, int index, String data);
+    abstract boolean onImageViewTouch(View view, MotionEvent evt, int index, String data);
     abstract  void mapKeys();
     abstract void handleInputEvent(String data);
     abstract String getLabelFromRawString(String data);
@@ -55,15 +62,15 @@ abstract class Keyboard {
         return (int) Math.round(dp * density + 0.5);
     }
 
-    final void setKeyPressColor(TextView softkey) {
+    final void setKeyPressColor(View softkey) {
         softkey.setPressed(true);
     }
 
-    final void setKeyHighlightColor(TextView softkey) {
+    final void setKeyHighlightColor(View softkey) {
         softkey.setBackgroundResource(R.drawable.softkey_shape_highlight);
     }
 
-    final void resetKeyColor(TextView softkey) {
+    final void resetKeyColor(View softkey) {
         softkey.setBackgroundResource(R.drawable.softkey_shape_normal);
         softkey.setPressed(false);
     }

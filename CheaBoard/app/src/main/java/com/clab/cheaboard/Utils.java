@@ -1,17 +1,26 @@
 package com.clab.cheaboard;
 
+import java.util.HashMap;
+
 public class Utils {
     static int ALPHABET_SIZE = 26;
+    static HashMap<String, Integer> BOOLEAN_SETTINGS_MENU_MAP = new HashMap<String, Integer>() {{
+        put("settings_use_swipe_popup", 0);
+        put("settings_use_vibration_feedback", 0);
+        put("settings_use_sound_feedback", 0);
+        put("settings_use_auto_complete", 0);
+        put("settings_longpress_time", 0);
+        put("settings_use_number_row", 0);
+        put("settings_use_auto_period", 0);
+        put("settings_use_backkey_longpress", 0);
+        put("settings_use_trie", 1);
+    }};
 
-    static String BOOLEAN_SETTINGS_MENU_LIST[] = {
-            "settings_use_swipe_popup", "settings_use_vibration_feedback",
-            "settings_use_sound_feedback", "settings_use_auto_complete", "settings_longpress_time",
-            "settings_use_number_row", "settings_use_auto_period", "settings_use_backkey_longpress"
-    };
     static String SETTINGS_USE_SWIPE_POPUP = "settings_use_swipe_popup";
     static String SETTINGS_USE_VIBRATION_FEEDBACK = "settings_use_vibration_feedback";
     static String SETTINGS_USE_AUTO_PERIOD = "settings_use_auto_period";
     static String SETTINGS_USE_BACKKEY_LONGPRESS = "settings_use_backkey_longpress";
+    static String SETTINGS_USE_TRIE = "settings_use_trie";
 
     static int STATE_SHIFT = 1;
     static int STATE_SYMBOL = 2;
