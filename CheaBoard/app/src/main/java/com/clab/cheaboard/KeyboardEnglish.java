@@ -201,7 +201,6 @@ final class KeyboardEnglish extends Keyboard{
                 enlargeKeysIfNeeded();
                 break;
             default:
-                terminateTimer();
         }
         return true;
     }
@@ -271,7 +270,7 @@ final class KeyboardEnglish extends Keyboard{
     void handleInputEvent(String data) {
         if (mDataBaseHelper.getSettingValue(Utils.SETTINGS_USE_VIBRATION_FEEDBACK)) {
             mCheaBoardService.getVibratorService().vibrate(
-                    VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+                    VibrationEffect.createOneShot(Utils.VIBRATION_DURATION, Utils.VIBRATION_AMPLITUDE));
         }
 
         InputConnection inputConnection = mCheaBoardService.getInputConnection();

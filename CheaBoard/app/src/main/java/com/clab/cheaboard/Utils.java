@@ -35,6 +35,9 @@ public class Utils {
     static int GESTURE_QUEUE_SIZE = 20;
     static int GESTURE_GUIDE_SIZE = 145;
 
+    static final int VIBRATION_DURATION = 50;
+    static final int VIBRATION_AMPLITUDE = 30;
+
     static CHARACTER_TYPE isCharacterOrNumber(char c) {
         if (c >= 'a' && c <= 'z') {
             return CHARACTER_TYPE.ALPHABET_LOWERCASE;
